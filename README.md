@@ -26,22 +26,21 @@ from pyresponse import (
     ResponseBody,
     ResponseHeader,
     ResponseStatusLineOk,
-    SocketOutput,
-    WireFront,
-    WireMedia,
+    Server,
 )
 
-WireFront(
-    lambda socket: (
+Server(
+    lambda request: (
         ResponseStatusLineOk(
             ResponseHeader(
                 ResponseBody("<h1>Hello from PyResponse!</h1>"),
                 "Content-Type",
                 "text/html",
             )
-        ).media(WireMedia(SocketOutput(socket)))
-    )
-).conclusion()
+        )
+    ),
+    port=8000,
+).start()
 ```
 
 ---
