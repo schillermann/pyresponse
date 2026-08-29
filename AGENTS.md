@@ -26,25 +26,25 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
 
 ## 2. Core Architecture & Philosophy (Elegant Objects / Pure OOP)
 
-`pyresponse` follows strict **Elegant Objects** (Yegor Bugayenko) and pure Object-Oriented Programming (Alan Kay / Smalltalk / Takes / Cactoos) principles:
+`pyresponse` follows strict **Elegant Objects** (Yegor Bugayenko) and pure Object-Oriented Programming (Alan Kay / Smalltalk) principles:
 
-1. **No Annotations/Decorators as Route Handlers**:
+1. **No Annotations/Decorators as Route Endpoints**:
    - Never use procedural routing decorators like `@app.get(...)` or `@app.post(...)`.
-   - Handlers are first-class domain objects implementing the `Take` interface (`async def take(self, request: Request) -> Response`).
+   - Resources/endpoints are first-class domain objects (`Resource`) or functions receiving a `Request` and returning a `Response`.
 
 2. **Composition over Inheritance (Decorator Pattern)**:
-   - Build functionality by wrapping objects in composable decorators.
-   - Request decorators: `RqMethod`, `RqPath`, `RqHeader`, `RqQueryParams`, `RqPathParams`, `RqJson`, `RqMultipart`, etc.
-   - Response decorators: `RsWithStatus`, `RsWithHeader`, `RsJson`, `RsText`, `RsBinary`, `RsSse`, `RsEmpty`, `RsRedirect`, etc.
-   - Routing: Composed fork trees (`TkFork`, `FkRegex`, `FkMethod`).
+   - Build responses and behavior by wrapping domain objects in composable decorators.
+   - Response decorators: `Body`, `Header`, `StatusLine`, `OK`, `Json`, `Text`, `Binary`, `Sse`, `Redirect`, `NoContent`, etc.
+   - Request wrappers/inspectors: `Request`, `WithParams`, etc.
 
 3. **100% Code-Free Constructors**:
    - `__init__` methods must strictly only perform attribute assignments (`self._param = param`).
    - No validation, conditionals, type conversions, side effects, or business logic inside `__init__`.
 
-4. **Never Return `None` (Null Object Pattern)**:
-   - Do not return `None` or use `None` checks for missing values.
-   - Use polymorphic Null Objects (e.g., `NoHeader`, `EmptyBody`, `NoUser`, `AnonymousSession`).
+4. **Never Accept, Never Return `None` (Fail Fast & Explicit Domain Models)**:
+   - Never return `None` or use `None` checks for missing values.
+   - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFoundError`, `RouteNotFoundError`, `ParamNotFoundError`).
+   - Use fallback decorators or explicit defaults for optional values rather than dummy null objects.
 
 5. **No Getters / Setters / Anemic DTOs**:
    - Do not create anemic data structures with getter/setter methods.

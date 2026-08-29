@@ -2,7 +2,7 @@
 
 A simple web framework in Python that respects OOP.
 
-Inspired by pure OOP, Alan Kay with [Smalltalk](https://en.wikipedia.org/wiki/Smalltalk), and Yegor Bugayenko's [Cactoos](https://github.com/yegor256/cactoos), [Takes](https://github.com/yegor256/takes), and [JPages](https://github.com/yegor256/jpages).
+Inspired by pure OOP, Alan Kay with [Smalltalk](https://en.wikipedia.org/wiki/Smalltalk), and Yegor Bugayenko's [Cactoos](https://github.com/yegor256/cactoos) and [JPages](https://github.com/yegor256/jpages).
 
 I’ve also created the web framework in other languages that you can check out.
 - [Java](https://github.com/schillermann/jresponses)
@@ -22,18 +22,14 @@ pip install pyresponse
 ### Example: Hello World
 
 ```python
-from pyresponse import (
-    ResponseBody,
-    ResponseHeader,
-    ResponseStatusLineOk,
-    Server,
-)
+from pyresponse import Server
+from pyresponse.response import OK, Body, Header
 
 Server(
     lambda request: (
-        ResponseStatusLineOk(
-            ResponseHeader(
-                ResponseBody("<h1>Hello from PyResponse!</h1>"),
+        OK(
+            Header(
+                Body("<h1>Hello from PyResponse!</h1>"),
                 "Content-Type",
                 "text/html",
             )

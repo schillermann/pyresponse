@@ -11,15 +11,18 @@
 
 1. **No Annotations/Decorators as Route Handlers**:
    - No `@app.get(...)` or `@app.post(...)`.
-   - Handlers are first-class domain objects implementing the `Take` interface (`take(req) -> res`).
+   - Handlers are first-class domain objects or functions receiving a `Request` and returning a `Response`.
 2. **Composition & Decorator Pattern**:
-   - Requests and responses are wrapped in composable decorators (`RsWithStatus`, `RsWithHeader`, `RsJson`, `RqHeader`, `RqJson`).
-   - Routing is a tree of fork decorators (`TkFork`, `FkRegex`, `FkMethod`).
+   - Responses are composed by wrapping domain objects in composable decorators (`Body`, `Header`, `StatusLine`, `OK`, `Json`, `Text`, `Binary`, `Sse`, `Redirect`, `NoContent`).
+   - Requests provide composable inspection and streaming extraction (`Method`, `Path`, `Header`, `QueryParams`, `PathParams`, `Json`, `Multipart`).
+   - Routing is built with composable forks (`Fork`, `Path`, `Regex`, `Method`).
 3. **100% Code-Free Constructors**:
    - Constructors only perform parameter assignments (`self._param = param`).
    - No business logic, validation, network calls, or conditionals inside `__init__`.
-4. **Never Return `None` (Null Object Pattern)**:
-   - Queries return polymorphic Null Objects (`NoHeader`, `EmptyBody`, `NoUser`, `AnonymousSession`) rather than `None` or raising control-flow exceptions.
+4. **Never Accept, Never Return `None` (Fail Fast & Explicit Domain Models)**:
+   - Never return `None` or use `None` checks for missing values.
+   - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFoundError`, `RouteNotFoundError`, `ParamNotFoundError`).
+   - Use fallback decorators or explicit defaults for optional values rather than dummy null objects.
 5. **No Getters / Setters / Anemic DTOs**:
    - Encapsulate data and behavior together.
 6. **No Static Methods / No Global Singletons**:
@@ -35,42 +38,49 @@
 
 ### 2.2 Core Interfaces
 - **`Request`**:
-  - `head()`: Provides metadata (method, URI path, query strings, headers).
+  - `head()`: Provides header encapsulation (`Header`).
+  - `method()`: Provides HTTP method string.
+  - `path()`: Provides URI path string.
+  - `query_string()`: Provides raw query bytes.
+  - `path_params()`: Provides extracted route path parameters.
   - `body()`: Provides an async byte stream of the request payload.
 - **`Response`**:
   - `head()`: Provides HTTP status code and response headers.
   - `body()`: Provides an async byte stream / generator for sending data.
-- **`Take`**:
-  - `async def take(self, request: Request) -> Response`
+- **`Endpoint`**:
+  - `async def response(self, request: Request) -> Response`
 - **`Fork`**:
-  - Evaluates whether a request matches criteria and routes to a targeted `Take`.
+  - `async def route(self, request: Request) -> Endpoint`
+- **`Lifespan`**:
+  - `async def startup(self) -> None`
+  - `async def shutdown(self) -> None`
 
-### 2.3 Request Decorators
-- `RqMethod`: HTTP method query (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`).
-- `RqPath`: Path string query.
-- `RqHeader`: Header lookup by key, returning `NoHeader` when missing.
-- `RqQueryParams`: Query string parser for structured search and pagination.
-- `RqPathParams`: Regex path variable extractor (e.g. `/api/documents/(?P<doc_id>[a-zA-Z0-9_-]+)`).
-- `RqJson`: Async payload reader deserializing JSON into domain entities.
-- `RqMultipart` / `RqFormData`: Streaming multipart parser for file uploads (PDF, audio, documents).
+### 2.3 Request Decorators & Inspectors
+- `Method`: HTTP method inspector (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`).
+- `Path`: Path string inspector.
+- `Header`: Header lookup by key, failing fast with `HeaderNotFoundError` when missing without default.
+- `QueryParams`: Query string parser for structured search and pagination.
+- `PathParams`: Regex path variable extractor (e.g. `/api/documents/(?P<doc_id>[a-zA-Z0-9_-]+)`).
+- `Json`: Async payload reader deserializing JSON into domain entities.
+- `Multipart`: Streaming multipart parser for file uploads (PDF, audio, documents).
 
 ### 2.4 Response Decorators
-- `RsWithStatus(response, status_code)`: Wraps status code (200, 201, 400, 401, 403, 404, 500, etc.).
-- `RsWithHeader(response, key, value)`: Attaches HTTP headers.
-- `RsJson(domain_object)`: Serializes domain models/dictionaries to JSON.
-- `RsText(text)`: Plain text response.
-- `RsBinary(stream, content_type)`: Binary file streaming (for downloads and PDF viewing).
-- `RsSse(async_event_stream)`: **Server-Sent Events (SSE)** response generator emitting `event: ...\ndata: ...\n\n` for AI token streaming.
-- `RsEmpty()`: 204 No Content response.
-- `RsRedirect(target_url, status_code=307)`: HTTP redirect.
+- `StatusLine(response, status_code)`: Wraps status code (200, 201, 400, 401, 403, 404, 500, etc.).
+- `Ok(response)`: Wraps 200 OK status code.
+- `Header(response, key, value)`: Attaches HTTP headers.
+- `Body(content)`: Encapsulates response payload body.
+- `Json(domain_object)`: Serializes domain models/dictionaries to JSON.
+- `Text(text)`: Plain text response.
+- `Binary(stream, content_type)`: Binary file streaming (for downloads and PDF viewing).
+- `Sse(async_event_stream)`: **Server-Sent Events (SSE)** response generator emitting `event: ...\ndata: ...\n\n` for AI token streaming.
+- `NoContent()`: 204 No Content response.
+- `Redirect(target_url, status_code=307)`: HTTP redirect.
 
-### 2.5 Routing & Middleware (Takes & Forks)
-- `TkFork`: Master router evaluating a collection of `Fork` instances in sequence.
-- `FkRegex`: Regex URI matcher.
-- `FkMethod`: HTTP method filter.
-- `TkCors`: CORS decorator with origin, header, method, and preflight (`OPTIONS`) handling.
-- `TkSafe` / `TkFallback`: Error boundary decorator catching unhandled exceptions and returning structured JSON errors.
-- `TkAuth`: Authentication and tenancy interceptor passing authenticated context to inner takes.
+### 2.5 Routing & Forks
+- `Fork`: Composite fork evaluating a sequence of branch forks.
+- `Path`: Exact URI path matcher fork.
+- `Regex`: Regex URI matcher with parameter extraction fork.
+- `Method`: HTTP method filter fork.
 
 ---
 
@@ -80,12 +90,12 @@ To serve as a full replacement for FastAPI, `pyresponse` must support:
 
 | Feature | Required Framework Support |
 | :--- | :--- |
-| **Realtime AI Streaming** (`/api/chat/stream`) | Async SSE response decorator (`RsSse`), token stream generators, non-blocking I/O |
-| **Fast-Path Engine (<10ms)** | Low-overhead routing (`TkFork` / `FkRegex`), zero reflection/inspection penalty |
-| **Document Uploads** (`/api/documents/upload`) | Async `multipart/form-data` stream parser (`RqMultipart`), S3 streaming |
+| **Realtime AI Streaming** (`/api/chat/stream`) | Async SSE response decorator (`ResponseSse`), token stream generators, non-blocking I/O |
+| **Fast-Path Engine (<10ms)** | Low-overhead fork routing (`Fork` / `Regex`), zero reflection/inspection penalty |
+| **Document Uploads** (`/api/documents/upload`) | Async `multipart/form-data` stream parser (`RequestMultipart`), S3 streaming |
 | **Audio Dictation** (`/api/audio/transcribe`) | Multipart audio payload parsing, streaming bytes to `faster-whisper` |
-| **Document Downloads** (`/api/documents/{id}/download`) | `RsBinary` with `Content-Disposition: inline` / `attachment` and MIME detection |
+| **Document Downloads** (`/api/documents/{id}/download`) | `ResponseBinary` with `Content-Disposition: inline` / `attachment` and MIME detection |
 | **Template Processing** (`/api/templates/*`) | File uploads and generated PDF/Word binary streaming |
-| **Multi-Tenancy & Auth** | Context propagation via decorators (`TkAuth`, `X-User-Id`, `X-Tenant-Id`) |
+| **Multi-Tenancy & Auth** | Context propagation via request decorators |
 | **Database Pool Lifespan** | ASGI lifespan startup/shutdown handling for `asyncpg` pools |
 | **Frontend Compatibility** | 100% JSON & SSE protocol contract compatibility with Vite frontend |
