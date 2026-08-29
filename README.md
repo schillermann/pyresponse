@@ -11,11 +11,46 @@ I’ve also created the web framework in other languages that you can check out.
 
 ---
 
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+pip install pyresponse
+```
+
+### Example: Hello World
+
+```python
+from pyresponse import (
+    ResponseBody,
+    ResponseHeader,
+    ResponseStatusLineOk,
+    SocketOutput,
+    WireFront,
+    WireMedia,
+)
+
+WireFront(
+    lambda socket: (
+        ResponseStatusLineOk(
+            ResponseHeader(
+                ResponseBody("<h1>Hello from PyResponse!</h1>"),
+                "Content-Type",
+                "text/html",
+            )
+        ).media(WireMedia(SocketOutput(socket)))
+    )
+).conclusion()
+```
+
+---
+
 ## 🎯 Motivation & Philosophy
 
 Most modern Python web frameworks (FastAPI, Flask, Django) heavily rely on:
 - Global state and singletons (`app = FastAPI()`, global dependency containers)
-- Prozedural routing decorators (`@app.get(...)`, `@app.post(...)`)
+- Procedural routing decorators (`@app.get(...)`, `@app.post(...)`)
 - Anemic data structures (DTOs with getters/setters or raw dictionaries)
 - Reflection-based magic dependency injection
 
