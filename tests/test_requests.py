@@ -263,4 +263,33 @@ async def test_request_form_unified_urlencoded_and_multipart():
     assert mp_file.filename() == "avatar.png"
 
 
+@pytest.mark.asyncio
+async def test_asgi_request_body_buffering():
+    messages = [
+        {"type": "http.request", "body": b"hello ", "more_body": True},
+        {"type": "http.request", "body": b"world", "more_body": False},
+    ]
+
+    async def mock_receive():
+        return messages.pop(0)
+
+    req = AsgiRequest(
+        scope={"type": "http", "method": "POST", "path": "/test", "headers": []},
+        receive=mock_receive,
+    )
+
+    # First read
+    chunks1 = []
+    async for chunk in req.body():
+        chunks1.append(chunk)
+    assert b"".join(chunks1) == b"hello world"
+
+    # Second read from buffer
+    chunks2 = []
+    async for chunk in req.body():
+        chunks2.append(chunk)
+    assert b"".join(chunks2) == b"hello world"
+
+
+
 

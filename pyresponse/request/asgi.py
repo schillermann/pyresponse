@@ -12,6 +12,8 @@ class Asgi(Request):
     def __init__(self, scope: dict[str, Any], receive: Callable[..., Any]) -> None:
         self._scope = scope
         self._receive = receive
+        self._buffer: list[bytes] = []
+        self._consumed = False
 
     async def head(self) -> Head:
         return Head(self._scope.get("headers", ()))
@@ -29,6 +31,10 @@ class Asgi(Request):
         return self._scope.get("path_params", {})
 
     async def body(self) -> AsyncIterator[bytes]:
+        for chunk in self._buffer:
+            yield chunk
+        if self._consumed:
+            return
         more_body = True
         while more_body:
             message = await self._receive()
@@ -37,8 +43,12 @@ class Asgi(Request):
                 chunk = message.get("body", b"")
                 more_body = message.get("more_body", False)
                 if chunk:
+                    self._buffer.append(chunk)
                     yield chunk
+                if not more_body:
+                    self._consumed = True
             elif msg_type == "http.disconnect":
+                self._consumed = True
                 break
 
 
