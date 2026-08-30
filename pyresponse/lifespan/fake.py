@@ -20,13 +20,10 @@ class Fake(Lifespan):
         """Check if startup lifecycle was executed."""
         return self._started
 
-    def shutdown_called(self) -> bool:
-        """Check if shutdown lifecycle was executed."""
-        return self._shutdown_called
-
     def stopped(self) -> bool:
-        """Alias for shutdown_called()."""
+        """Check if shutdown lifecycle was executed."""
         return self._shutdown_called
 
 
 FakeLifespan = Fake
+

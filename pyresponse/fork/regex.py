@@ -4,11 +4,11 @@ import re
 from typing import Any
 from collections.abc import Callable as TypingCallable
 
-from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.fork.fork import Fork
-from pyresponse.fork.unmatched import UnmatchedEndpoint
-from pyresponse.fork.with_params import WithParams as EndpointWithParams
+from pyresponse.fork.unmatched import Unmatched
+from pyresponse.fork.with_params import WithParams
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 from pyresponse.response.statusline.not_found import NotFound
@@ -33,11 +33,13 @@ class Regex(Fork):
         path = await request.path()
         match = re.match(self._pattern, path)
         if match:
-            endpoint = await AsEndpoint(self._origin).route(request)
+            endpoint = await Adapted(self._origin).route(request)
             if endpoint.matched():
                 params = match.groupdict()
-                return EndpointWithParams(endpoint, params) if params else endpoint
-        return UnmatchedEndpoint()
+                return WithParams(endpoint, params) if params else endpoint
+        return Unmatched()
+
+
 
     async def response(self, request: Request) -> Response:
         matched = await self.route(request)

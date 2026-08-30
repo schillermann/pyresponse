@@ -5,10 +5,10 @@ from collections.abc import Callable as TypingCallable
 from types import MappingProxyType
 from typing import Mapping
 
-from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.fork.fork import Fork
-from pyresponse.fork.trapped import Trapped as TrappedEndpoint
+from pyresponse.fork.trapped import Trapped
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 
@@ -30,10 +30,12 @@ class Trap(Fork):
         return True
 
     async def route(self, request: Request) -> Endpoint:
-        endpoint = await AsEndpoint(self._origin).route(request)
+        endpoint = await Adapted(self._origin).route(request)
         if endpoint.matched():
-            return TrappedEndpoint(endpoint, self._traps, self._fallback)
+            return Trapped(endpoint, self._traps, self._fallback)
         return endpoint
+
+
 
     async def response(self, request: Request) -> Response:
         endpoint = await self.route(request)

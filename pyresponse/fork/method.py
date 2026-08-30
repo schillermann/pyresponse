@@ -2,10 +2,10 @@
 
 from typing import Any, Callable
 
-from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.fork.fork import Fork
-from pyresponse.fork.unmatched import UnmatchedEndpoint
+from pyresponse.fork.unmatched import Unmatched
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 from pyresponse.response.statusline.not_found import NotFound
@@ -28,26 +28,22 @@ class Method(Fork):
 
     async def route(self, request: Request) -> Endpoint:
         req_method = await request.method()
+        method_name = getattr(self, "METHOD", self._method_or_endpoint if isinstance(self._method_or_endpoint, str) and self._endpoint is not None else "")
+        target_endpoint = self._endpoint if self._endpoint is not None else self._method_or_endpoint
+        path_filter = self._method_or_endpoint if self._endpoint is not None and getattr(self, "METHOD", None) is not None else ""
 
-        target_method = getattr(self, "METHOD", None)
-        if target_method is not None:
-            if req_method.upper() != target_method.upper():
-                return UnmatchedEndpoint()
-            if self._endpoint is None:
-                return await AsEndpoint(self._method_or_endpoint).route(request)
+        if method_name and req_method.upper() != method_name.upper():
+            return Unmatched()
+
+        if path_filter:
             req_path = await request.path()
-            if req_path != self._method_or_endpoint:
-                return UnmatchedEndpoint()
-            return await AsEndpoint(self._endpoint).route(request)
+            if req_path != path_filter:
+                return Unmatched()
 
-        if isinstance(self._method_or_endpoint, str):
-            if req_method.upper() != self._method_or_endpoint.upper():
-                return UnmatchedEndpoint()
-            if self._endpoint is not None:
-                return await AsEndpoint(self._endpoint).route(request)
-            return UnmatchedEndpoint()
+        return await Adapted(target_endpoint).route(request)
 
-        return await AsEndpoint(self._method_or_endpoint).route(request)
+
+
 
     async def response(self, request: Request) -> Response:
         matched = await self.route(request)

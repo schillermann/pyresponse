@@ -21,5 +21,3 @@ class WithParams(Endpoint):
     async def response(self, request: Request) -> Response:
         return await self._origin.response(RequestWithParams(request, dict(self._params)))
 
-
-EndpointWithParams = WithParams

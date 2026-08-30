@@ -19,5 +19,3 @@ class Prefixed(Endpoint):
     async def response(self, request: Request) -> Response:
         return await self._origin.response(SubPath(request, self._sub_path))
 
-
-PrefixedEndpoint = Prefixed

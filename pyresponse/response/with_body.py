@@ -1,22 +1,26 @@
-"""Response body payload encapsulation."""
+"""Response decorator attaching payload body to an existing Response."""
 
 from typing import Any, AsyncIterator
 
 from pyresponse.response.response import Head, Response
 
 
-class Body(Response):
-    """Leaf HTTP response encapsulating a body payload."""
+class WithBody(Response):
+    """Response decorator attaching or replacing body payload on an origin Response."""
 
-    def __init__(self, content: Any = b"") -> None:
+    def __init__(self, origin: Response, content: Any) -> None:
+        self._origin = origin
         self._content = content
 
     async def head(self) -> Head:
-        headers = []
+        origin_head = await self._origin.head()
+        headers = list(origin_head.headers())
         if isinstance(self._content, (str, bytes)):
             b = self._content.encode("utf-8") if isinstance(self._content, str) else self._content
-            headers.append((b"content-length", str(len(b)).encode("latin1")))
-        return Head(status=200, headers=headers)
+            has_len = any(k.lower() == b"content-length" for k, _ in headers)
+            if not has_len:
+                headers.append((b"content-length", str(len(b)).encode("latin1")))
+        return Head(status=origin_head.status(), headers=headers)
 
     async def body(self) -> AsyncIterator[bytes]:
         if isinstance(self._content, str):
@@ -29,4 +33,3 @@ class Body(Response):
         elif hasattr(self._content, "__iter__"):
             for chunk in self._content:
                 yield chunk if isinstance(chunk, bytes) else str(chunk).encode("utf-8")
-

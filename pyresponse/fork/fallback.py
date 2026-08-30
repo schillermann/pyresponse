@@ -2,7 +2,7 @@
 
 from typing import Any, Callable
 
-from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.fork.fork import Fork
 from pyresponse.request.request import Request
@@ -24,10 +24,11 @@ class Fallback(Fork):
         return True
 
     async def route(self, request: Request) -> Endpoint:
-        matched = await AsEndpoint(self._origin).route(request)
+        matched = await Adapted(self._origin).route(request)
         if matched.matched():
             return matched
-        return await AsEndpoint(self._fallback).route(request)
+        return await Adapted(self._fallback).route(request)
+
 
     async def response(self, request: Request) -> Response:
         matched = await self.route(request)

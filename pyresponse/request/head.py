@@ -17,9 +17,6 @@ class Head:
         """Return raw header key-value byte tuples."""
         return self._headers
 
-    def items(self) -> Sequence[tuple[bytes, bytes]]:
-        """Alias for headers() for ASGI compatibility."""
-        return self._headers
 
     def value(self, name: str) -> str:
         """Look up header by name returning string value or failing fast if missing."""

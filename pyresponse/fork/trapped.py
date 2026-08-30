@@ -1,9 +1,9 @@
 """Trapped endpoint decorator executing exception handlers."""
 
-from typing import Any
+import inspect
 from collections.abc import Callable as TypingCallable
 from types import MappingProxyType
-from typing import Mapping
+from typing import Any, Mapping
 
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.request.request import Request
@@ -27,9 +27,8 @@ class Trapped(Endpoint):
         return self._origin.matched()
 
     async def response(self, request: Request) -> Response:
-        import inspect
-
         try:
+
             return await self._origin.response(request)
         except Exception as exc:
             for exc_type, handler in self._traps.items():
@@ -45,5 +44,3 @@ class Trapped(Endpoint):
                 return result
             raise exc
 
-
-TrappedEndpoint = Trapped

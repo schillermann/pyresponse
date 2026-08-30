@@ -1,7 +1,8 @@
 """Callable endpoint adapter."""
 
-from typing import Any
+import inspect
 from collections.abc import Callable as TypingCallable
+from typing import Any
 
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.request.request import Request
@@ -18,12 +19,9 @@ class Callable(Endpoint):
         return True
 
     async def response(self, request: Request) -> Response:
-        import inspect
-
         res = self._target(request)
         if inspect.isawaitable(res):
             res = await res
         return res
 
 
-CallableEndpoint = Callable

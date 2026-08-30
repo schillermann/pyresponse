@@ -2,7 +2,7 @@
 
 from typing import Any, Callable
 
-from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.fork.fork import Fork
 from pyresponse.fork.unmatched import Unmatched
@@ -19,5 +19,6 @@ class Path(Fork):
     async def route(self, request: Request) -> Endpoint:
         path = await request.path()
         if path == self._path:
-            return await AsEndpoint(self._endpoint).route(request)
+            return await Adapted(self._endpoint).route(request)
         return Unmatched()
+

@@ -33,6 +33,3 @@ class Header(Envelope):
         headers = await self._origin.head()
         return headers.has(self._name)
 
-    async def exists(self) -> bool:
-        """Alias for has()."""
-        return await self.has()

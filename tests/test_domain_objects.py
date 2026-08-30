@@ -9,7 +9,7 @@ from pyresponse import (
     RouteNotFoundError,
 )
 
-from pyresponse.fork import UnmatchedEndpoint
+from pyresponse.fork import Unmatched
 from pyresponse.request import Body, Fake as FakeRequest, Head, Header
 
 
@@ -44,7 +44,8 @@ async def test_request_body_default_empty():
 
 @pytest.mark.asyncio
 async def test_unmatched_endpoint_fails_fast():
-    ue = UnmatchedEndpoint()
+    ue = Unmatched()
+
     assert ue.matched() is False
     with pytest.raises(RouteNotFoundError) as exc_info:
         await ue.response(FakeRequest(method="GET", path="/"))
@@ -61,8 +62,9 @@ async def test_default_lifespan():
 
 @pytest.mark.asyncio
 async def test_domain_wrappers_and_naming():
-    from pyresponse.fork import AsEndpoint, Get, Method
-    from pyresponse.request import AsgiRequest, Form, Json as RequestJson, RequestEnvelope, UploadFile
+    from pyresponse.fork import Adapted, Get, Method
+
+    from pyresponse.request import AsgiRequest, Files, Form, Json as RequestJson, RequestEnvelope, UploadFile
     from pyresponse.response import OK, ResponseEnvelope, Text
 
     # Test AsgiRequest and RequestEnvelope
@@ -93,12 +95,20 @@ async def test_domain_wrappers_and_naming():
     chunks = [c async for c in enveloped_res.body()]
     assert b"".join(chunks) == b"enveloped text"
 
-
-    # Test Form domain class
-    file_item = UploadFile(filename="doc.pdf", content_type="application/pdf", content=b"%PDF")
-    form = Form(fields={"name": ["Doc"]}, files={"doc": [file_item]})
+    # Test Form and Files domain classes
+    form = Form(fields={"name": ["Doc"], "tags": ["a", "b"]})
     assert form.field("name") == "Doc"
-    assert form.file("doc").filename() == "doc.pdf"
+    assert form.field_list("tags") == ["a", "b"]
+    assert form.has("name") is True
+    assert form.has("missing") is False
+
+    file_item = UploadFile(filename="doc.pdf", content_type="application/pdf", content=b"%PDF")
+    files = Files(files={"doc": [file_item]})
+    assert files.file("doc").filename() == "doc.pdf"
+    assert files.has("doc") is True
+    assert files.has("missing") is False
+
+
 
     # Test Method & Get fork
     get_route = Get(lambda req: OK(Text("method ok")))

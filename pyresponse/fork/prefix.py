@@ -3,13 +3,14 @@
 from typing import Any
 from collections.abc import Callable as TypingCallable
 
-from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.fork.fork import Fork
-from pyresponse.fork.prefixed import Prefixed as PrefixedEndpoint
+from pyresponse.fork.prefixed import Prefixed
 from pyresponse.fork.sub_path import SubPath
-from pyresponse.fork.unmatched import UnmatchedEndpoint
+from pyresponse.fork.unmatched import Unmatched
 from pyresponse.request.request import Request
+
 from pyresponse.response.response import Response
 from pyresponse.response.statusline.not_found import NotFound
 from pyresponse.response.text import Text
@@ -42,13 +43,15 @@ class Prefix(Fork):
             if not sub_path.startswith("/"):
                 sub_path = f"/{sub_path}"
         else:
-            return UnmatchedEndpoint()
+            return Unmatched()
 
         sub_req = SubPath(request, sub_path)
-        matched_endpoint = await AsEndpoint(self._origin).route(sub_req)
+        matched_endpoint = await Adapted(self._origin).route(sub_req)
+
         if matched_endpoint.matched():
-            return PrefixedEndpoint(matched_endpoint, sub_path)
-        return UnmatchedEndpoint()
+            return Prefixed(matched_endpoint, sub_path)
+        return Unmatched()
+
 
     async def response(self, request: Request) -> Response:
         matched = await self.route(request)

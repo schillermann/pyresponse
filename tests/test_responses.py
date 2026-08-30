@@ -20,7 +20,9 @@ from pyresponse.response import (
     Redirect,
     Sse,
     Text,
+    WithBody,
 )
+
 
 
 @pytest.mark.asyncio
@@ -143,3 +145,14 @@ async def test_response_no_content():
     assert head.status() == 204
     chunks = [c async for c in res.body()]
     assert len(chunks) == 0
+
+
+@pytest.mark.asyncio
+async def test_response_with_body():
+    origin = OK(Text("original text"))
+    decorated = WithBody(origin, "overridden text")
+    head = await decorated.head()
+    assert head.status() == 200
+    chunks = [c async for c in decorated.body()]
+    assert b"".join(chunks) == b"overridden text"
+

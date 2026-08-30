@@ -1,19 +1,21 @@
-"""Adapter converting callables or forks into standard Endpoints."""
+"""Adapter converting callables, responses, or forks into standard Endpoints."""
 
 import inspect
-from typing import Any
 from collections.abc import Callable as TypingCallable
+from typing import Any
 
-from pyresponse.fork.callable import Callable as CallableEndpoint
+from pyresponse.fork.callable import Callable
 from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.fixed import Fixed
 from pyresponse.fork.fork import Fork
 from pyresponse.request.request import Request
+from pyresponse.response.response import Response
 
 
-class AsEndpoint(Endpoint):
-    """Decorator converting raw callables or forks into standard Endpoints."""
+class Adapted(Endpoint):
+    """Decorator converting raw callables, responses, or forks into standard Endpoints."""
 
-    def __init__(self, origin: Endpoint | Fork | TypingCallable[[Request], Any] | Any) -> None:
+    def __init__(self, origin: Endpoint | Fork | Response | TypingCallable[[Request], Any] | Any) -> None:
         self._origin = origin
 
     def matched(self) -> bool:
@@ -25,8 +27,10 @@ class AsEndpoint(Endpoint):
         """Resolve origin into an Endpoint instance."""
         if isinstance(self._origin, Endpoint):
             return self._origin
+        if isinstance(self._origin, Response):
+            return Fixed(self._origin)
         if callable(self._origin):
-            return CallableEndpoint(self._origin)
+            return Callable(self._origin)
         return self._origin
 
     async def route(self, request: Request) -> Endpoint:

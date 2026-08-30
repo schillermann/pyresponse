@@ -20,6 +20,3 @@ class Unmatched(Endpoint):
         method = await request.method()
         raise RouteNotFoundError(path, method)
 
-
-UnmatchedEndpoint = Unmatched
-UnmatchedResource = Unmatched

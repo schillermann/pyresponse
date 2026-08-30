@@ -83,3 +83,24 @@ async def test_fallback_fork():
         assert res_fallback.status_code == 200
         assert res_fallback.text == "custom fallback!"
 
+
+@pytest.mark.asyncio
+async def test_fixed_endpoint():
+    from pyresponse.fork import Adapted, Fixed
+    from pyresponse.request import Fake as FakeRequest
+
+    fixed_res = OK(Body("fixed direct response"))
+    fixed_endpoint = Fixed(fixed_res)
+    assert fixed_endpoint.matched() is True
+
+    req = FakeRequest()
+    res = await fixed_endpoint.response(req)
+    assert res == fixed_res
+
+    # Adapted converting Response directly to Fixed
+    adapted = Adapted(fixed_res)
+    assert isinstance(adapted.value(), Fixed)
+    assert await adapted.response(req) == fixed_res
+
+
+
