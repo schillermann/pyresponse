@@ -4,7 +4,7 @@ from types import MappingProxyType
 from typing import Mapping, Sequence
 
 from pyresponse.request.upload_file import UploadFile
-from pyresponse.request.upload_not_found import UploadNotFoundError
+from pyresponse.request.upload_not_found import UploadNotFound
 
 
 class Files:
@@ -17,10 +17,10 @@ class Files:
         self._files = files
 
     def file(self, name: str) -> UploadFile:
-        """Return uploaded file or fail fast with UploadNotFoundError."""
+        """Return uploaded file or fail fast with UploadNotFound."""
         if name in self._files and self._files[name]:
             return self._files[name][0]
-        raise UploadNotFoundError(name)
+        raise UploadNotFound(name)
 
     def file_or(self, name: str, fallback: UploadFile) -> UploadFile:
         """Return uploaded file or explicit fallback file."""

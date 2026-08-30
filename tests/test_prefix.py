@@ -3,7 +3,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from pyresponse import OK, Server
+from pyresponse import Ok, Server
 from pyresponse.fork import Fork, Get, Path, Post, Prefix
 from pyresponse.response import Body, Json
 
@@ -13,9 +13,9 @@ async def test_prefix_routing():
     app = Prefix(
         "/api/v1",
         Fork(
-            Get("/users", lambda req: OK(Json({"users": ["Alice", "Bob"]}))),
-            Post("/users", lambda req: OK(Json({"created": True}))),
-            Get("/status", lambda req: OK(Body("API OK"))),
+            Get("/users", lambda req: Ok(Json({"users": ["Alice", "Bob"]}))),
+            Post("/users", lambda req: Ok(Json({"created": True}))),
+            Get("/status", lambda req: Ok(Body("API Ok"))),
         ),
     )
 
@@ -31,7 +31,7 @@ async def test_prefix_routing():
 
         res3 = await client.get("/api/v1/status")
         assert res3.status_code == 200
-        assert res3.text == "API OK"
+        assert res3.text == "API Ok"
 
         # Not matching prefix
         res4 = await client.get("/other/users")
@@ -50,13 +50,13 @@ async def test_nested_prefixes():
             Prefix(
                 "/v1",
                 Fork(
-                    Get("/hello", lambda req: OK(Body("Hello v1"))),
+                    Get("/hello", lambda req: Ok(Body("Hello v1"))),
                 ),
             ),
             Prefix(
                 "/v2",
                 Fork(
-                    Get("/hello", lambda req: OK(Body("Hello v2"))),
+                    Get("/hello", lambda req: Ok(Body("Hello v2"))),
                 ),
             ),
         ),
@@ -77,7 +77,7 @@ async def test_nested_prefixes():
 async def test_prefix_with_root_path():
     app = Prefix(
         "/api",
-        Path("/", lambda req: OK(Body("API root"))),
+        Path("/", lambda req: Ok(Body("API root"))),
     )
 
     server = Server(app)

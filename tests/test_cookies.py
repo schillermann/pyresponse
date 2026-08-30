@@ -2,9 +2,11 @@
 
 import pytest
 
-from pyresponse import OK, Text
-from pyresponse.request import Cookie, CookieNotFoundError, Cookies, Fake as FakeRequest
-from pyresponse.response import ResponseCookie, WithCookie, WithoutCookie
+from pyresponse import Ok, Text
+from pyresponse.request import Cookie, CookieNotFound, Cookies, Fake as FakeRequest
+from pyresponse.response.cookie import Cookie as ResponseCookie
+from pyresponse.response.with_cookie import WithCookie
+from pyresponse.response.without_cookie import WithoutCookie
 
 
 @pytest.mark.asyncio
@@ -25,14 +27,14 @@ async def test_request_cookie_inspection():
     assert await Cookie(req, "missing").has() is False
     assert await Cookie(req, "missing").value_or("fallback") == "fallback"
 
-    with pytest.raises(CookieNotFoundError) as exc:
+    with pytest.raises(CookieNotFound) as exc:
         await Cookie(req, "missing").value()
     assert exc.value.name() == "missing"
 
 
 @pytest.mark.asyncio
 async def test_with_cookie_and_without_cookie_response():
-    res = OK(Text("Cookie Set"))
+    res = Ok(Text("Cookie Set"))
     cookie_obj = ResponseCookie(
         name="session_id",
         value="secret123",

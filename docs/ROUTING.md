@@ -14,7 +14,7 @@ In `pyresponse`, routing is not achieved through procedural framework annotation
 4. [Path Prefixes & Modular Sub-Routers (`Prefix`)](#4-path-prefixes--modular-sub-routers-prefix)
 5. [Regex Matching & Path Parameters (`Regex`, `PathParams`)](#5-regex-matching--path-parameters-regex-pathparams)
 6. [Composite Routing & Fallbacks (`Fork`, `Fallback`)](#6-composite-routing--fallbacks-fork-fallback)
-7. [Exception Trapping & Error Mapping (`Trap` / `Catch`)](#7-exception-trapping--error-mapping-trap--catch)
+7. [Exception Trapping & Error Mapping (`Trap``Catch`)](#7-exception-trapping--error-mapping-trap--catch)
 8. [Complete Composed Example](#8-complete-composed-example)
 
 ---
@@ -162,14 +162,14 @@ app = Fallback(
 
 ---
 
-## 7. Exception Trapping & Error Mapping (`Trap` / `Catch`)
+## 7. Exception Trapping & Error Mapping (`Trap``Catch`)
 
 `Trap` wraps a `Fork` or `Endpoint` and intercepts domain exceptions, converting them into structured HTTP responses:
 
 ```python
 from pyresponse import BadRequest, ServerError, Trap
 from pyresponse.fork import Get
-from pyresponse.request import Header, HeaderNotFoundError, ParamNotFoundError
+from pyresponse.request import Header, HeaderNotFound, ParamNotFound
 from pyresponse.response import Json, OK
 
 async def secure_endpoint(req):
@@ -180,10 +180,10 @@ async def secure_endpoint(req):
 app = Trap(
     Get("/secure", secure_endpoint),
     traps={
-        HeaderNotFoundError: lambda exc, req: BadRequest(
+        HeaderNotFound: lambda exc, req: BadRequest(
             Json({"error": f"Missing header: {exc.name()}"})
         ),
-        ParamNotFoundError: lambda exc, req: BadRequest(
+        ParamNotFound: lambda exc, req: BadRequest(
             Json({"error": f"Missing parameter: {exc.name()}"})
         ),
         Exception: lambda exc, req: ServerError(
@@ -219,7 +219,7 @@ from pyresponse import (
 )
 from pyresponse.request import (
     Json as RequestJson,
-    ParamNotFoundError,
+    ParamNotFound,
     PathParams,
 )
 
@@ -267,7 +267,7 @@ app = Trap(
         ),
     ),
     traps={
-        ParamNotFoundError: lambda exc, req: BadRequest(
+        ParamNotFound: lambda exc, req: BadRequest(
             Json({"error": f"Missing parameter: {exc.name()}"})
         ),
     },

@@ -3,7 +3,7 @@
 import pytest
 
 from pyresponse import (
-    OK,
+    Ok,
     BadRequest,
     Created,
     NoContent,
@@ -27,7 +27,7 @@ from pyresponse.response import (
 
 @pytest.mark.asyncio
 async def test_response_status_line_ok():
-    res = OK(Body("Hello"))
+    res = Ok(Body("Hello"))
     head = await res.head()
     assert head.status() == 200
 
@@ -60,7 +60,7 @@ async def test_response_status_line_helpers():
         (ServerError, 500),
         (StatusServerError, 500),
         (StatusOk, 200),
-        (OK, 200),
+        (Ok, 200),
     ]:
         res = cls(Body("status check"))
         head = await res.head()
@@ -149,7 +149,7 @@ async def test_response_no_content():
 
 @pytest.mark.asyncio
 async def test_response_with_body():
-    origin = OK(Text("original text"))
+    origin = Ok(Text("original text"))
     decorated = WithBody(origin, "overridden text")
     head = await decorated.head()
     assert head.status() == 200

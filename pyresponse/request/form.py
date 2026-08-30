@@ -3,7 +3,7 @@
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
-from pyresponse.request.field_not_found import FieldNotFoundError
+from pyresponse.request.field_not_found import FieldNotFound
 
 
 class Form:
@@ -16,10 +16,10 @@ class Form:
         self._fields = fields
 
     def field(self, name: str) -> str:
-        """Return field value or fail fast with FieldNotFoundError."""
+        """Return field value or fail fast with FieldNotFound."""
         if name in self._fields and self._fields[name]:
             return self._fields[name][0]
-        raise FieldNotFoundError(name)
+        raise FieldNotFound(name)
 
     def field_or(self, name: str, fallback: str) -> str:
         """Return field value or explicit fallback string."""

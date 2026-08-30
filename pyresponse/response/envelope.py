@@ -1,13 +1,12 @@
-"""Response envelope base decorator."""
+"""Base response envelope decorator."""
 
 from typing import AsyncIterator
 
-from pyresponse.response.head import Head
-from pyresponse.response.response import Response
+from pyresponse.response.response import Head, Response
 
 
 class Envelope(Response):
-    """Domain envelope delegating all protocol methods to inner response."""
+    """Base class for response decorators implementing the envelope pattern."""
 
     def __init__(self, origin: Response) -> None:
         self._origin = origin
@@ -18,6 +17,3 @@ class Envelope(Response):
     async def body(self) -> AsyncIterator[bytes]:
         async for chunk in self._origin.body():
             yield chunk
-
-
-ResponseEnvelope = Envelope

@@ -4,9 +4,9 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from pyresponse import (
-    OK,
+    Ok,
     AsgiApp,
-    FakeLifespan,
+    Fake,
     Server,
     StatusLine,
 )
@@ -17,7 +17,7 @@ from pyresponse.response import Body, Header
 async def test_server_with_custom_endpoint_class():
     class GreetingEndpoint:
         def response(self, request):
-            return OK(Body("Hello from endpoint class"))
+            return Ok(Body("Hello from endpoint class"))
 
     server = Server(GreetingEndpoint())
     async with AsyncClient(transport=ASGITransport(app=server), base_url="http://testserver") as client:
@@ -47,8 +47,8 @@ async def test_server_async_callable_handler():
 
 @pytest.mark.asyncio
 async def test_lifespan_lifecycle():
-    lifespan = FakeLifespan()
-    app = AsgiApp(lambda req: OK(Body("ok")), lifespan=lifespan)
+    lifespan = Fake()
+    app = AsgiApp(lambda req: Ok(Body("ok")), lifespan=lifespan)
 
     # Simulate lifespan startup
     startup_messages = []

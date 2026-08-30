@@ -1,18 +1,11 @@
-"""200 OK status line decorator."""
+"""200 OK HTTP response envelope."""
 
-from pyresponse.response.envelope import Envelope
-from pyresponse.response.head import Head
-
-
-class Ok(Envelope):
-    """Decorator setting 200 OK status code."""
-
-    async def head(self) -> Head:
-        origin_head = await self._origin.head()
-        return Head(
-            status=200,
-            headers=origin_head.headers(),
-        )
+from pyresponse.response.response import Response
+from pyresponse.response.statusline.statusline import StatusLine
 
 
-OK = Ok
+class Ok(StatusLine):
+    """200 OK HTTP response envelope."""
+
+    def __init__(self, origin: Response) -> None:
+        super().__init__(origin, 200)

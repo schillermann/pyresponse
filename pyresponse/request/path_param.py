@@ -1,7 +1,7 @@
 """Single path parameter inspection decorator."""
 
 from pyresponse.request.envelope import Envelope
-from pyresponse.request.param_not_found import ParamNotFoundError
+from pyresponse.request.param_not_found import ParamNotFound
 from pyresponse.request.path_params import PathParams
 from pyresponse.request.request import Request
 
@@ -15,11 +15,11 @@ class PathParam(Envelope):
         self._pattern = pattern
 
     async def value(self) -> str:
-        """Return path parameter value or fail fast with ParamNotFoundError."""
+        """Return path parameter value or fail fast with ParamNotFound."""
         all_params = await PathParams(self._origin, self._pattern).params()
         if self._name in all_params:
             return all_params[self._name]
-        raise ParamNotFoundError(self._name)
+        raise ParamNotFound(self._name)
 
     async def value_or(self, fallback: str) -> str:
         """Return path parameter value or explicit fallback string."""

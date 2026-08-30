@@ -5,6 +5,3 @@ class Error(Exception):
     """Base exception for all pyresponse framework errors."""
 
     pass
-
-
-PyResponseError = Error

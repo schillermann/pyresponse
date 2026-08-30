@@ -1,4 +1,4 @@
-"""Tests for Trap and Catch exception handling decorators."""
+"""Tests for Trap and Trap exception handling decorators."""
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -6,14 +6,14 @@ from httpx import ASGITransport, AsyncClient
 from pyresponse import (
     BadRequest,
     Created,
-    HeaderNotFoundError,
+    HeaderNotFound,
     NotFound,
-    OK,
-    ParamNotFoundError,
+    Ok,
+    ParamNotFound,
     Server,
     ServerError,
 )
-from pyresponse.fork import Catch, Fork, Get, Post, Trap
+from pyresponse.fork import Trap, Fork, Get, Post, Trap
 from pyresponse.request import Header as RequestHeader
 from pyresponse.response import Body, Json
 
@@ -22,13 +22,13 @@ from pyresponse.response import Body, Json
 async def test_trap_specific_exception():
     async def risky_endpoint(req):
         token = await RequestHeader(req, "Authorization").value()
-        return OK(Json({"token": token}))
+        return Ok(Json({"token": token}))
 
 
     app = Trap(
         Get("/secure", risky_endpoint),
         {
-            HeaderNotFoundError: lambda exc, req: BadRequest(
+            HeaderNotFound: lambda exc, req: BadRequest(
                 Json({"error": f"Missing header: {exc.name()}"})
             ),
         },
@@ -41,7 +41,7 @@ async def test_trap_specific_exception():
         assert res_fail.status_code == 400
         assert res_fail.json() == {"error": "Missing header: Authorization"}
 
-        # With header -> 200 OK
+        # With header -> 200 Ok
         res_ok = await client.get("/secure", headers={"Authorization": "Bearer 123"})
         assert res_ok.status_code == 200
         assert res_ok.json() == {"token": "Bearer 123"}
@@ -55,7 +55,7 @@ async def test_trap_with_fallback():
     app = Trap(
         Get("/error", error_endpoint),
         {
-            ParamNotFoundError: lambda exc, req: NotFound(Json({"error": "Param missing"})),
+            ParamNotFound: lambda exc, req: NotFound(Json({"error": "Param missing"})),
         },
         fallback=lambda exc, req: ServerError(Json({"error": "Server error", "detail": str(exc)})),
     )
@@ -69,9 +69,9 @@ async def test_trap_with_fallback():
 
 @pytest.mark.asyncio
 async def test_catch_alias_and_composite_fork():
-    app = Catch(
+    app = Trap(
         Fork(
-            Get("/item", lambda req: OK(Body("item ok"))),
+            Get("/item", lambda req: Ok(Body("item ok"))),
             Post("/item", lambda req: (_ for _ in ()).throw(KeyError("missing_key"))),
         ),
         {

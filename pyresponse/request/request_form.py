@@ -1,5 +1,3 @@
-from typing import Any
-
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.files import Files
 from pyresponse.request.form import Form
@@ -28,12 +26,12 @@ class RequestForm(Envelope):
         return Files()
 
     async def field(self, name: str) -> str:
-        """Return single field value or fail fast with FieldNotFoundError."""
+        """Return single field value or fail fast with FieldNotFound."""
         f = await self.form()
         return f.field(name)
 
     async def file(self, name: str) -> UploadFile:
-        """Return uploaded file or fail fast with UploadNotFoundError."""
+        """Return uploaded file or fail fast with UploadNotFound."""
         files = await self.files()
         return files.file(name)
 
@@ -46,5 +44,3 @@ class RequestForm(Envelope):
         """Check if uploaded file is present."""
         files = await self.files()
         return files.has(name)
-
-

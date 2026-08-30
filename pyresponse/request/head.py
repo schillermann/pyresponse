@@ -1,7 +1,7 @@
 """Request HTTP head metadata encapsulation."""
 
 from typing import Sequence
-from pyresponse.request.header_not_found import HeaderNotFoundError
+from pyresponse.request.header_not_found import HeaderNotFound
 
 
 class Head:
@@ -24,7 +24,7 @@ class Head:
         for k, v in self._headers:
             if k.lower() == target:
                 return v.decode("latin1")
-        raise HeaderNotFoundError(name)
+        raise HeaderNotFound(name)
 
     def value_or(self, name: str, fallback: str) -> str:
         """Look up header by name returning string value or fallback if missing."""

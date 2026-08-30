@@ -22,7 +22,7 @@ class UrlEncoded(Envelope):
         return Form(fields=fields)
 
     async def field(self, name: str) -> str:
-        """Return single field value or fail fast with FieldNotFoundError."""
+        """Return single field value or fail fast with FieldNotFound."""
         f = await self.form()
         return f.field(name)
 

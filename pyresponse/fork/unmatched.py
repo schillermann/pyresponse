@@ -1,22 +1,22 @@
-"""Unmatched branch domain entity."""
+"""Unmatched endpoint returning 404 or raising RouteNotFound."""
 
 from pyresponse.fork.endpoint import Endpoint
-from pyresponse.fork.route_not_found import RouteNotFoundError
+from pyresponse.fork.route_not_found import RouteNotFound
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 
 
 class Unmatched(Endpoint):
-    """Domain entity representing an unmatched branch that fails fast when invoked."""
+    """Fallback endpoint when no fork matches."""
+
+    def __init__(self, path: str = "", method: str = "") -> None:
+        self._path = path
+        self._method = method
 
     def matched(self) -> bool:
         return False
 
-    async def route(self, request: Request) -> Endpoint:
-        return self
-
-    async def response(self, request: Request) -> Response:
-        path = await request.path()
-        method = await request.method()
-        raise RouteNotFoundError(path, method)
-
+    async def response(self, req: Request) -> Response:
+        path = await req.path() if hasattr(req, "path") else self._path
+        method = await req.method() if hasattr(req, "method") else self._method
+        raise RouteNotFound(path, method)

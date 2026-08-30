@@ -3,7 +3,7 @@
 from typing import Sequence
 
 from pyresponse.request.envelope import Envelope
-from pyresponse.request.param_not_found import ParamNotFoundError
+from pyresponse.request.param_not_found import ParamNotFound
 from pyresponse.request.query_params import QueryParams
 from pyresponse.request.request import Request
 
@@ -16,11 +16,11 @@ class QueryParam(Envelope):
         self._name = name
 
     async def value(self) -> str:
-        """Return parameter value or fail fast with ParamNotFoundError."""
+        """Return parameter value or fail fast with ParamNotFound."""
         all_params = await QueryParams(self._origin).params()
         if self._name in all_params and all_params[self._name]:
             return all_params[self._name][0]
-        raise ParamNotFoundError(self._name)
+        raise ParamNotFound(self._name)
 
     async def value_or(self, fallback: str) -> str:
         """Return parameter value or explicit fallback string."""

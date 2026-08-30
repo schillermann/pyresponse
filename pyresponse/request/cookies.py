@@ -3,7 +3,7 @@
 from http.cookies import SimpleCookie
 from typing import Mapping
 
-from pyresponse.request.cookie_not_found import CookieNotFoundError
+from pyresponse.request.cookie_not_found import CookieNotFound
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.request import Request
 
@@ -22,11 +22,11 @@ class Cookies(Envelope):
         return {k: v.value for k, v in simple_cookie.items()}
 
     async def cookie(self, name: str) -> str:
-        """Return single cookie value or fail fast with CookieNotFoundError."""
+        """Return single cookie value or fail fast with CookieNotFound."""
         all_cookies = await self.cookies()
         if name in all_cookies:
             return all_cookies[name]
-        raise CookieNotFoundError(name)
+        raise CookieNotFound(name)
 
     async def cookie_or(self, name: str, fallback: str) -> str:
         """Return single cookie value or explicit fallback string."""

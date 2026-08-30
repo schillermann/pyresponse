@@ -4,7 +4,7 @@ import re
 from typing import Mapping
 
 from pyresponse.request.envelope import Envelope
-from pyresponse.request.param_not_found import ParamNotFoundError
+from pyresponse.request.param_not_found import ParamNotFound
 from pyresponse.request.request import Request
 
 
@@ -32,7 +32,7 @@ class PathParams(Envelope):
             return p[name]
         if default:
             return default
-        raise ParamNotFoundError(name)
+        raise ParamNotFound(name)
 
     async def param_or(self, name: str, fallback: str) -> str:
         """Return single path parameter value or explicit fallback string."""

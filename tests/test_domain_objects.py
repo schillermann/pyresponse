@@ -3,10 +3,10 @@
 import pytest
 
 from pyresponse import (
-    HeaderNotFoundError,
+    HeaderNotFound,
     Lifespan,
-    ParamNotFoundError,
-    RouteNotFoundError,
+    ParamNotFound,
+    RouteNotFound,
 )
 
 from pyresponse.fork import Unmatched
@@ -20,8 +20,8 @@ async def test_header_fail_fast_and_fallback():
     assert h.has("content-type") is True
     assert h.has("x-missing") is False
 
-    # Missing header without default fails fast with HeaderNotFoundError
-    with pytest.raises(HeaderNotFoundError) as exc_info:
+    # Missing header without default fails fast with HeaderNotFound
+    with pytest.raises(HeaderNotFound) as exc_info:
         h.value("authorization")
     assert exc_info.value.name() == "authorization"
 
@@ -47,7 +47,7 @@ async def test_unmatched_endpoint_fails_fast():
     ue = Unmatched()
 
     assert ue.matched() is False
-    with pytest.raises(RouteNotFoundError) as exc_info:
+    with pytest.raises(RouteNotFound) as exc_info:
         await ue.response(FakeRequest(method="GET", path="/"))
     assert exc_info.value.path() == "/"
     assert exc_info.value.method() == "GET"
@@ -62,56 +62,51 @@ async def test_default_lifespan():
 
 @pytest.mark.asyncio
 async def test_domain_wrappers_and_naming():
-    from pyresponse.fork import Adapted, Get, Method
+    from pyresponse import fork, request, response
 
-    from pyresponse.request import AsgiRequest, Files, Form, Json as RequestJson, RequestEnvelope, UploadFile
-    from pyresponse.response import OK, ResponseEnvelope, Text
-
-    # Test AsgiRequest and RequestEnvelope
+    # Test Asgi and Envelope
     async def mock_receive():
         return {"type": "http.request", "body": b'{"hello": "world"}', "more_body": False}
 
-    asgi_req = AsgiRequest(
+    asgi_req = request.Asgi(
         {"type": "http", "method": "POST", "path": "/api", "headers": [(b"x-token", b"xyz")]},
         mock_receive,
     )
-    enveloped_req = RequestEnvelope(asgi_req)
+    enveloped_req = request.Envelope(asgi_req)
     assert await enveloped_req.method() == "POST"
     assert await enveloped_req.path() == "/api"
     head = await enveloped_req.head()
     assert head.value("x-token") == "xyz"
 
     # Test Json.content() and Json.value()
-    json_inspector = RequestJson(enveloped_req)
+    json_inspector = request.Json(enveloped_req)
     content = await json_inspector.content()
     assert content == {"hello": "world"}
     assert await json_inspector.value() == {"hello": "world"}
 
-    # Test ResponseEnvelope
-    res = OK(Text("enveloped text"))
-    enveloped_res = ResponseEnvelope(res)
+    # Test Envelope
+    res = response.Ok(response.Text("enveloped text"))
+    enveloped_res = response.Envelope(res)
     head_res = await enveloped_res.head()
     assert head_res.status() == 200
     chunks = [c async for c in enveloped_res.body()]
     assert b"".join(chunks) == b"enveloped text"
 
     # Test Form and Files domain classes
-    form = Form(fields={"name": ["Doc"], "tags": ["a", "b"]})
+    form = request.Form(fields={"name": ["Doc"], "tags": ["a", "b"]})
     assert form.field("name") == "Doc"
     assert form.field_list("tags") == ["a", "b"]
     assert form.has("name") is True
     assert form.has("missing") is False
 
-    file_item = UploadFile(filename="doc.pdf", content_type="application/pdf", content=b"%PDF")
-    files = Files(files={"doc": [file_item]})
+    file_item = request.UploadFile(filename="doc.pdf", content_type="application/pdf", content=b"%PDF")
+    files = request.Files(files={"doc": [file_item]})
     assert files.file("doc").filename() == "doc.pdf"
     assert files.has("doc") is True
     assert files.has("missing") is False
 
-
-
     # Test Method & Get fork
-    get_route = Get(lambda req: OK(Text("method ok")))
+    get_route = fork.Get(lambda req: response.Ok(response.Text("method ok")))
     assert get_route.matched() is True
     endpoint = await get_route.route(FakeRequest(method="GET"))
     assert endpoint.matched() is True
@@ -122,7 +117,7 @@ async def test_domain_wrappers_and_naming():
 def test_package_version():
     import pyresponse
 
-    assert pyresponse.__version__ == "0.1.0"
+    assert pyresponse.__version__ == "0.2.0"
 
 
 

@@ -3,17 +3,17 @@
 import pytest
 
 from pyresponse.request import (
-    AsgiRequest,
+    Asgi,
     Fake as FakeRequest,
-    FieldNotFoundError,
+    FieldNotFound,
     Form,
     Head,
     Header,
-    HeaderNotFoundError,
+    HeaderNotFound,
     Json,
     Method,
     Multipart,
-    ParamNotFoundError,
+    ParamNotFound,
     Path,
     PathParam,
     PathParams,
@@ -21,7 +21,7 @@ from pyresponse.request import (
     QueryParams,
     RequestForm,
     UploadFile,
-    UploadNotFoundError,
+    UploadNotFound,
     UrlEncoded,
 )
 
@@ -50,8 +50,8 @@ async def test_request_header():
     headers = await req.head()
     assert headers.value("Authorization") == "Bearer token123"
 
-    # Missing header without default fails fast with HeaderNotFoundError
-    with pytest.raises(HeaderNotFoundError):
+    # Missing header without default fails fast with HeaderNotFound
+    with pytest.raises(HeaderNotFound):
         await Header(req, "X-Missing").value()
 
     # Missing header with default returns fallback value
@@ -78,11 +78,11 @@ async def test_request_query_params():
     assert await QueryParam(req, "missing").value_or("default_val") == "default_val"
     assert await QueryParam(req, "tags").values() == ["python", "oop"]
 
-    with pytest.raises(ParamNotFoundError) as exc:
+    with pytest.raises(ParamNotFound) as exc:
         await QueryParam(req, "missing").value()
     assert exc.value.name() == "missing"
 
-    with pytest.raises(ParamNotFoundError) as exc:
+    with pytest.raises(ParamNotFound) as exc:
         await query.param("missing")
     assert exc.value.name() == "missing"
 
@@ -107,11 +107,11 @@ async def test_request_path_params():
     assert await PathParam(req, "missing", pattern=pattern).has() is False
     assert await PathParam(req, "missing", pattern=pattern).value_or("fallback") == "fallback"
 
-    with pytest.raises(ParamNotFoundError) as exc:
+    with pytest.raises(ParamNotFound) as exc:
         await PathParam(req, "missing", pattern=pattern).value()
     assert exc.value.name() == "missing"
 
-    with pytest.raises(ParamNotFoundError) as exc:
+    with pytest.raises(ParamNotFound) as exc:
         await path_params.param("missing")
     assert exc.value.name() == "missing"
 
@@ -170,17 +170,17 @@ async def test_request_multipart():
     fake_file = UploadFile("default.txt", "text/plain", b"default")
     assert files.file_or("missing_file", fallback=fake_file).filename() == "default.txt"
 
-    # Missing field/file without default fails fast with FieldNotFoundError and UploadNotFoundError
-    with pytest.raises(FieldNotFoundError) as exc_field:
+    # Missing field/file without default fails fast with FieldNotFound and UploadNotFound
+    with pytest.raises(FieldNotFound) as exc_field:
         form.field("missing_field")
 
     assert exc_field.value.name() == "missing_field"
-    assert isinstance(exc_field.value, ParamNotFoundError)
+    assert isinstance(exc_field.value, ParamNotFound)
 
-    with pytest.raises(UploadNotFoundError) as exc_file:
+    with pytest.raises(UploadNotFound) as exc_file:
         files.file("missing_file")
     assert exc_file.value.name() == "missing_file"
-    assert isinstance(exc_file.value, ParamNotFoundError)
+    assert isinstance(exc_file.value, ParamNotFound)
 
 
 
@@ -205,7 +205,7 @@ async def test_request_urlencoded():
     assert form.field_list("tag") == ["python", "oop"]
     assert form.field_or("missing", fallback="fallback_val") == "fallback_val"
 
-    with pytest.raises(FieldNotFoundError) as exc:
+    with pytest.raises(FieldNotFound) as exc:
         await url_encoded.field("missing")
     assert exc.value.name() == "missing"
 
@@ -264,7 +264,9 @@ async def test_request_form_unified_urlencoded_and_multipart():
 
 
 @pytest.mark.asyncio
-async def test_asgi_request_body_buffering():
+async def test_sticky_request_body_buffering():
+    from pyresponse.request.sticky import Sticky
+
     messages = [
         {"type": "http.request", "body": b"hello ", "more_body": True},
         {"type": "http.request", "body": b"world", "more_body": False},
@@ -273,20 +275,21 @@ async def test_asgi_request_body_buffering():
     async def mock_receive():
         return messages.pop(0)
 
-    req = AsgiRequest(
+    req = Asgi(
         scope={"type": "http", "method": "POST", "path": "/test", "headers": []},
         receive=mock_receive,
     )
+    sticky_req = Sticky(req)
 
     # First read
     chunks1 = []
-    async for chunk in req.body():
+    async for chunk in sticky_req.body():
         chunks1.append(chunk)
     assert b"".join(chunks1) == b"hello world"
 
-    # Second read from buffer
+    # Second read from sticky cache
     chunks2 = []
-    async for chunk in req.body():
+    async for chunk in sticky_req.body():
         chunks2.append(chunk)
     assert b"".join(chunks2) == b"hello world"
 

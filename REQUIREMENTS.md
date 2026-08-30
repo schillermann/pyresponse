@@ -1,11 +1,11 @@
 # Requirements Specification: `pyresponse`
 
-> **A Pure OOP / Elegant Objects ASGI Web Framework for Python**  
+> **A Pure OOPElegant Objects ASGI Web Framework for Python**  
 > Tailored for high-performance enterprise applications, AI streaming, and zero-annotation architectures.
 
 ---
 
-## 1. Architectural Philosophy (Elegant Objects / Yegor Bugayenko)
+## 1. Architectural Philosophy (Elegant ObjectsYegor Bugayenko)
 
 `pyresponse` is built strictly according to **Yegor Bugayenko's Elegant Objects** principles:
 
@@ -24,11 +24,11 @@
    - Default collections are strictly immutable (`MappingProxyType({})`, `()`).
 5. **Never Accept, Never Return `None` (Fail Fast & Explicit Domain Models)**:
    - Never return `None` or use `None` checks for missing values.
-   - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFoundError`, `RouteNotFoundError`, `ParamNotFoundError`).
+   - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFound`, `RouteNotFound`, `ParamNotFound`).
    - Use fallback decorators or explicit defaults for optional values rather than dummy null objects.
-6. **No Getters / Setters / Anemic DTOs**:
+6. **No GettersSettersAnemic DTOs**:
    - Encapsulate data and behavior together within cohesive domain models.
-7. **No Static Methods / No Global Singletons**:
+7. **No Static MethodsNo Global Singletons**:
    - Composition root handles dependency injection explicitly.
 
 
@@ -51,7 +51,7 @@
   - `body()`: Provides an async byte stream of the request payload.
 - **`Response`**:
   - `head()`: Provides HTTP status code and response headers.
-  - `body()`: Provides an async byte stream / generator for sending data.
+  - `body()`: Provides an async byte streamgenerator for sending data.
 - **`Endpoint`**:
   - `async def response(self, request: Request) -> Response`
 - **`Fork`**:
@@ -63,7 +63,7 @@
 ### 2.3 Request Decorators & Inspectors
 - `Method`: HTTP method inspector (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`).
 - `Path`: Path string inspector.
-- `Header`: Header lookup by key, failing fast with `HeaderNotFoundError` when missing without default.
+- `Header`: Header lookup by key, failing fast with `HeaderNotFound` when missing without default.
 - `QueryParams`: Query string parser for structured search and pagination.
 - `PathParams`: Regex path variable extractor (e.g. `/api/documents/(?P<doc_id>[a-zA-Z0-9_-]+)`).
 - `Json`: Async payload reader deserializing JSON into domain entities.
@@ -88,7 +88,7 @@
 - `Method`: HTTP method filter fork.
 - `Prefix`: URI path prefix matcher fork for mounting sub-routers.
 - `Get`, `Post`, `Put`, `Delete`, `Patch`, `Options`, `Head`: Composable HTTP method-specific routing forks.
-- `Trap` / `Catch`: Exception trapping decorator converting domain errors to HTTP error responses.
+- `Trap``Catch`: Exception trapping decorator converting domain errors to HTTP error responses.
 
 
 ---
@@ -100,10 +100,10 @@ To serve as a full replacement for FastAPI, `pyresponse` must support:
 | Feature | Required Framework Support |
 | :--- | :--- |
 | **Realtime AI Streaming** (`/api/chat/stream`) | Async SSE response decorator (`ResponseSse`), token stream generators, non-blocking I/O |
-| **Fast-Path Engine (<10ms)** | Low-overhead fork routing (`Fork` / `Regex`), zero reflection/inspection penalty |
+| **Fast-Path Engine (<10ms)** | Low-overhead fork routing (`Fork``Regex`), zero reflection/inspection penalty |
 | **Document Uploads** (`/api/documents/upload`) | Async `multipart/form-data` stream parser (`RequestMultipart`), S3 streaming |
 | **Audio Dictation** (`/api/audio/transcribe`) | Multipart audio payload parsing, streaming bytes to `faster-whisper` |
-| **Document Downloads** (`/api/documents/{id}/download`) | `ResponseBinary` with `Content-Disposition: inline` / `attachment` and MIME detection |
+| **Document Downloads** (`/api/documents/{id}/download`) | `ResponseBinary` with `Content-Disposition: inline``attachment` and MIME detection |
 | **Template Processing** (`/api/templates/*`) | File uploads and generated PDF/Word binary streaming |
 | **Multi-Tenancy & Auth** | Context propagation via request decorators |
 | **Database Pool Lifespan** | ASGI lifespan startup/shutdown handling for `asyncpg` pools |

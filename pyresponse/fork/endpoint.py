@@ -1,4 +1,4 @@
-"""Core Endpoint protocol."""
+"""Endpoint protocol interface for request-handling objects."""
 
 from typing import Protocol, runtime_checkable
 
@@ -8,20 +8,8 @@ from pyresponse.response.response import Response
 
 @runtime_checkable
 class Endpoint(Protocol):
-    """Concrete web endpoint producing an HTTP Response for an incoming Request."""
+    """Protocol representing an object capable of producing a Response for a Request."""
 
-    def matched(self) -> bool:
-        """Indicate whether this endpoint represents a successful match."""
-        return True
-
-    async def route(self, request: Request) -> "Endpoint":
-        """Route to this endpoint."""
-        return self
-
-    async def response(self, request: Request) -> Response:
-        """Produce an HTTP response for the given request."""
+    async def response(self, req: Request) -> Response:
+        """Process the request and return a response."""
         ...
-
-
-Page = Endpoint
-Resource = Endpoint

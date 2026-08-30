@@ -4,11 +4,11 @@ import base64
 import pytest
 
 from pyresponse.request import (
-    AuthNotFoundError,
+    AuthNotFound,
     BasicAuth,
     BearerToken,
     Fake as FakeRequest,
-    HeaderNotFoundError,
+    HeaderNotFound,
 )
 
 
@@ -27,10 +27,10 @@ async def test_bearer_token_extractor():
     assert await empty_bearer.has() is False
     assert await empty_bearer.token_or("fallback_token") == "fallback_token"
 
-    with pytest.raises(AuthNotFoundError) as exc:
+    with pytest.raises(AuthNotFound) as exc:
         await empty_bearer.token()
     assert exc.value.scheme() == "Bearer"
-    assert isinstance(exc.value, HeaderNotFoundError)
+    assert isinstance(exc.value, HeaderNotFound)
 
     # Malformed authorization
     malformed_req = FakeRequest(headers=[(b"authorization", b"Basic 12345")])
@@ -52,6 +52,6 @@ async def test_basic_auth_extractor():
     empty_req = FakeRequest()
     assert await BasicAuth(empty_req).has() is False
 
-    with pytest.raises(AuthNotFoundError) as exc:
+    with pytest.raises(AuthNotFound) as exc:
         await BasicAuth(empty_req).username()
     assert exc.value.scheme() == "Basic"

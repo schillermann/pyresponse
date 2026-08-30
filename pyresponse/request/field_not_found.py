@@ -1,13 +1,14 @@
 """Missing form field domain exception."""
 
-from pyresponse.request.param_not_found import ParamNotFoundError
+from pyresponse.request.param_not_found import ParamNotFound
 
 
-class FieldNotFoundError(ParamNotFoundError):
-    """Raised when a specific form field is requested but not found in the request."""
+class FieldNotFound(ParamNotFound):
+    """Raised when a form field is requested but not found."""
 
     def __init__(self, name: str) -> None:
         super().__init__(name)
+        self._name = name
 
-
-FieldNotFound = FieldNotFoundError
+    def name(self) -> str:
+        return self._name

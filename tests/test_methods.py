@@ -3,7 +3,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from pyresponse import OK, Server
+from pyresponse import Ok, Server
 from pyresponse.fork import (
     Delete,
     Fork,
@@ -21,13 +21,13 @@ from pyresponse.response import Body, Header
 @pytest.mark.asyncio
 async def test_all_http_methods_with_paths():
     app = Fork(
-        Get("/resource", lambda req: OK(Body("got get"))),
-        Post("/resource", lambda req: OK(Body("got post"))),
-        Put("/resource", lambda req: OK(Body("got put"))),
-        Delete("/resource", lambda req: OK(Body("got delete"))),
-        Patch("/resource", lambda req: OK(Body("got patch"))),
-        Options("/resource", lambda req: OK(Header(Body(""), "Allow", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"))),
-        Head("/resource", lambda req: OK(Body(""))),
+        Get("/resource", lambda req: Ok(Body("got get"))),
+        Post("/resource", lambda req: Ok(Body("got post"))),
+        Put("/resource", lambda req: Ok(Body("got put"))),
+        Delete("/resource", lambda req: Ok(Body("got delete"))),
+        Patch("/resource", lambda req: Ok(Body("got patch"))),
+        Options("/resource", lambda req: Ok(Header(Body(""), "Allow", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"))),
+        Head("/resource", lambda req: Ok(Body(""))),
     )
 
     server = Server(app)
@@ -65,8 +65,8 @@ async def test_method_fork_single_argument():
     app = Path(
         "/single",
         Fork(
-            Get(lambda req: OK(Body("get on single"))),
-            Post(lambda req: OK(Body("post on single"))),
+            Get(lambda req: Ok(Body("get on single"))),
+            Post(lambda req: Ok(Body("post on single"))),
         ),
     )
 
@@ -89,8 +89,8 @@ async def test_generic_method_fork():
     from pyresponse.fork import Method
 
     app = Fork(
-        Method("GET", lambda req: OK(Body("generic get"))),
-        Method("POST", lambda req: OK(Body("generic post"))),
+        Method("GET", lambda req: Ok(Body("generic get"))),
+        Method("POST", lambda req: Ok(Body("generic post"))),
     )
 
     server = Server(app)

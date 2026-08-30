@@ -1,10 +1,10 @@
-"""Missing parameter domain exception."""
+"""Missing HTTP query or path parameter domain exception."""
 
 from pyresponse.error import Error
 
 
-class ParamNotFoundError(Error, KeyError):
-    """Raised when a query or path parameter is requested but not found."""
+class ParamNotFound(Error, KeyError):
+    """Raised when a parameter is requested but not found in the request."""
 
     def __init__(self, name: str) -> None:
         super().__init__(f"Parameter '{name}' was not found in request")
@@ -12,6 +12,3 @@ class ParamNotFoundError(Error, KeyError):
 
     def name(self) -> str:
         return self._name
-
-
-ParamNotFound = ParamNotFoundError

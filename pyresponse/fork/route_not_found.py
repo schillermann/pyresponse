@@ -1,13 +1,13 @@
-"""Missing route domain exception."""
+"""Route not found domain exception."""
 
 from pyresponse.error import Error
 
 
-class RouteNotFoundError(Error, LookupError):
-    """Raised when no matching fork/route is found for an incoming request."""
+class RouteNotFound(Error):
+    """Raised when no route matches the request."""
 
-    def __init__(self, path: str, method: str = "") -> None:
-        super().__init__(f"No route found for {method} {path}".strip())
+    def __init__(self, path: str = "", method: str = "") -> None:
+        super().__init__(f"No route found for {method} '{path}'")
         self._path = path
         self._method = method
 
@@ -16,6 +16,3 @@ class RouteNotFoundError(Error, LookupError):
 
     def method(self) -> str:
         return self._method
-
-
-RouteNotFound = RouteNotFoundError

@@ -5,8 +5,9 @@ from typing import Any, Callable
 from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.lifespan.lifespan import Lifespan
-from pyresponse.request.asgi import Asgi as AsgiRequest
+from pyresponse.request.asgi import Asgi
 from pyresponse.request.request import Request
+from pyresponse.request.sticky import Sticky
 from pyresponse.response.response import Response
 
 
@@ -29,9 +30,8 @@ class AsgiApp:
     ) -> None:
         scope_type = scope.get("type", "")
         if scope_type == "http":
-            req = AsgiRequest(scope, receive)
+            req = Sticky(Asgi(scope, receive))
             response = await Adapted(self._endpoint).response(req)
-
 
             head = await response.head()
             await send({

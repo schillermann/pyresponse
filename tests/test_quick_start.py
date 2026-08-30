@@ -4,14 +4,14 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from pyresponse import Server
-from pyresponse.response import OK, Body, Header
+from pyresponse.response import Ok, Body, Header
 
 
 @pytest.mark.asyncio
 async def test_quick_start_example():
     server = Server(
         lambda request: (
-            OK(
+            Ok(
                 Header(
                     Body("<h1>Hello from PyResponse!</h1>"),
                     "Content-Type",

@@ -106,12 +106,12 @@ class Multipart(Envelope):
         return files
 
     async def field(self, name: str) -> str:
-        """Return single field value or fail fast with FieldNotFoundError."""
+        """Return single field value or fail fast with FieldNotFound."""
         form = await self.form()
         return form.field(name)
 
     async def file(self, name: str) -> UploadFile:
-        """Return uploaded file or fail fast with UploadNotFoundError."""
+        """Return uploaded file or fail fast with UploadNotFound."""
         files = await self.files()
         return files.file(name)
 

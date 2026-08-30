@@ -6,7 +6,7 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
 
 ## 1. Git & Commit Guidelines
 
-- **Staged Changes Focus**: Commit messages must always accurately describe the changes currently staged in `git diff --cached` / `git status`.
+- **Staged Changes Focus**: Commit messages must always accurately describe the changes currently staged in `git diff --cached``git status`.
 - **Conventional Commits v1.0.0 Compliance**:
   - Format: `<type>[optional scope]: <description>`
   - Types:
@@ -24,9 +24,9 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
 
 ---
 
-## 2. Core Architecture & Philosophy (Elegant Objects / Pure OOP)
+## 2. Core Architecture & Philosophy (Elegant ObjectsPure OOP)
 
-`pyresponse` follows strict **Elegant Objects** (Yegor Bugayenko) and pure Object-Oriented Programming (Alan Kay / Smalltalk) principles:
+`pyresponse` follows strict **Elegant Objects** (Yegor Bugayenko) and pure Object-Oriented Programming (Alan KaySmalltalk) principles:
 
 1. **No Annotations/Decorators as Route Endpoints**:
    - Never use procedural routing decorators like `@app.get(...)` or `@app.post(...)`.
@@ -43,15 +43,15 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
 
 4. **Never Accept, Never Return `None` (Fail Fast & Explicit Domain Models)**:
    - Never return `None` or use `None` checks for missing values.
-   - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFoundError`, `RouteNotFoundError`, `ParamNotFoundError`).
+   - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFound`, `RouteNotFound`, `ParamNotFound`).
    - Use fallback decorators or explicit defaults for optional values rather than dummy null objects.
 
-5. **No Getters / Setters / Anemic DTOs**:
+5. **No GettersSettersAnemic DTOs**:
    - Do not create anemic data structures with getter/setter methods.
    - Encapsulate data and behavior together within cohesive domain objects.
 
 6. **No Static Methods & No Global Singletons**:
-   - Avoid global mutable state, singleton app containers, and `@staticmethod` / `@classmethod` utility dumps.
+   - Avoid global mutable state, singleton app containers, and `@staticmethod``@classmethod` utility dumps.
    - Explicitly construct and compose dependencies at the composition root.
 
 ---

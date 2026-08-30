@@ -2,16 +2,16 @@
 
 import pytest
 
-from pyresponse import Get, OK, Text
-from pyresponse.fork.cors import Cors as CorsFork
+from pyresponse import Get, Ok, Text
+from pyresponse.fork.cors import Cors as ForkCors
 from pyresponse.request import Fake as FakeRequest
-from pyresponse.response.cors import Cors
+from pyresponse.response.cors import Cors as ResponseCors
 
 
 @pytest.mark.asyncio
 async def test_cors_response_decorator():
-    res = OK(Text("CORS data"))
-    cors_res = Cors(
+    res = Ok(Text("CORS data"))
+    cors_res = ResponseCors(
         res,
         allow_origin="https://example.com",
         allow_methods=("GET", "POST"),
@@ -31,8 +31,8 @@ async def test_cors_response_decorator():
 
 @pytest.mark.asyncio
 async def test_cors_fork_preflight_and_routing():
-    route = CorsFork(
-        Get("/api/data", lambda req: OK(Text("payload"))),
+    route = ForkCors(
+        Get("/api/data", lambda req: Ok(Text("payload"))),
         allow_origin="*",
     )
 

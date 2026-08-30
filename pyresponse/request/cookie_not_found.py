@@ -1,20 +1,14 @@
-"""Cookie not found error."""
+"""Missing HTTP cookie domain exception."""
 
-from pyresponse.request.param_not_found import ParamNotFoundError
+from pyresponse.error import Error
 
 
-class CookieNotFoundError(ParamNotFoundError):
-    """Raised when a required cookie is missing from the request."""
+class CookieNotFound(Error, KeyError):
+    """Raised when a cookie is requested but not found."""
 
     def __init__(self, name: str) -> None:
-        super().__init__(name)
+        super().__init__(f"Cookie '{name}' was not found in request")
         self._name = name
 
     def name(self) -> str:
         return self._name
-
-    def __str__(self) -> str:
-        return f"Cookie '{self._name}' not found in request"
-
-
-CookieNotFound = CookieNotFoundError

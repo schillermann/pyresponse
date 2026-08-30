@@ -4,7 +4,7 @@ import urllib.parse
 from typing import Mapping, Sequence
 
 from pyresponse.request.envelope import Envelope
-from pyresponse.request.param_not_found import ParamNotFoundError
+from pyresponse.request.param_not_found import ParamNotFound
 
 
 class QueryParams(Envelope):
@@ -21,7 +21,7 @@ class QueryParams(Envelope):
             return all_params[name][0]
         if default:
             return default
-        raise ParamNotFoundError(name)
+        raise ParamNotFound(name)
 
     async def param_or(self, name: str, fallback: str) -> str:
         """Return single query parameter value or explicit fallback string."""

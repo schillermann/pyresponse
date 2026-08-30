@@ -3,7 +3,7 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from pyresponse import OK, Server
+from pyresponse import Ok, Server
 from pyresponse.fork import Fork, Method, Path, Regex
 from pyresponse.response import Body, Json
 
@@ -11,8 +11,8 @@ from pyresponse.response import Body, Json
 @pytest.mark.asyncio
 async def test_composite_fork_path():
     app = Fork(
-        Path("/hello", lambda req: OK(Body("Hello World"))),
-        Path("/about", lambda req: OK(Body("About Us"))),
+        Path("/hello", lambda req: Ok(Body("Hello World"))),
+        Path("/about", lambda req: Ok(Body("About Us"))),
     )
 
     server = Server(app)
@@ -33,7 +33,7 @@ async def test_composite_fork_path():
 async def test_fork_regex_with_params():
     async def user_endpoint(req):
         params = await req.path_params()
-        return OK(Json({"user_id": params.get("user_id")}))
+        return Ok(Json({"user_id": params.get("user_id")}))
 
     app = Fork(
         Regex(r"^/users/(?P<user_id>\d+)$", user_endpoint)
@@ -49,8 +49,8 @@ async def test_fork_regex_with_params():
 @pytest.mark.asyncio
 async def test_fork_method():
     app = Fork(
-        Method("GET", lambda req: OK(Body("got get"))),
-        Method("POST", lambda req: OK(Body("got post"))),
+        Method("GET", lambda req: Ok(Body("got get"))),
+        Method("POST", lambda req: Ok(Body("got post"))),
     )
 
     server = Server(app)
@@ -69,8 +69,8 @@ async def test_fallback_fork():
     from pyresponse.fork import Fallback
 
     app = Fallback(
-        Path("/match", lambda req: OK(Body("matched!"))),
-        fallback=lambda req: OK(Body("custom fallback!")),
+        Path("/match", lambda req: Ok(Body("matched!"))),
+        fallback=lambda req: Ok(Body("custom fallback!")),
     )
 
     server = Server(app)
@@ -89,7 +89,7 @@ async def test_fixed_endpoint():
     from pyresponse.fork import Adapted, Fixed
     from pyresponse.request import Fake as FakeRequest
 
-    fixed_res = OK(Body("fixed direct response"))
+    fixed_res = Ok(Body("fixed direct response"))
     fixed_endpoint = Fixed(fixed_res)
     assert fixed_endpoint.matched() is True
 

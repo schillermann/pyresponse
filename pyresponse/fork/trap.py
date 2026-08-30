@@ -1,9 +1,8 @@
-"""Exception trapping fork."""
+"""Exception-trapping fork decorator for declarative error handling."""
 
-from typing import Any
 from collections.abc import Callable as TypingCallable
 from types import MappingProxyType
-from typing import Mapping
+from typing import Any, Mapping
 
 from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
@@ -14,11 +13,11 @@ from pyresponse.response.response import Response
 
 
 class Trap(Fork):
-    """Routing fork wrapping endpoints with exception traps."""
+    """Fork decorator that catches exceptions and routes them to handler callbacks."""
 
     def __init__(
         self,
-        origin: Endpoint | Fork | TypingCallable[[Request], Any],
+        origin: Endpoint | Fork,
         traps: Mapping[type[Exception], TypingCallable[[Exception, Request], Any]] = MappingProxyType({}),
         fallback: TypingCallable[[Exception, Request], Any] | None = None,
     ) -> None:
@@ -31,15 +30,8 @@ class Trap(Fork):
 
     async def route(self, request: Request) -> Endpoint:
         endpoint = await Adapted(self._origin).route(request)
-        if endpoint.matched():
-            return Trapped(endpoint, self._traps, self._fallback)
-        return endpoint
+        return Trapped(endpoint, self._traps, self._fallback)
 
-
-
-    async def response(self, request: Request) -> Response:
-        endpoint = await self.route(request)
-        return await endpoint.response(request)
-
-
-Catch = Trap
+    async def response(self, req: Request) -> Response:
+        endpoint = await self.route(req)
+        return await endpoint.response(req)
