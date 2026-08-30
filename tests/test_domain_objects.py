@@ -109,3 +109,10 @@ async def test_domain_wrappers_and_naming():
     assert not_matched.matched() is False
 
 
+def test_package_version():
+    import pyresponse
+
+    assert pyresponse.__version__ == "0.1.0"
+
+
+

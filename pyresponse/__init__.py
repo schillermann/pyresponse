@@ -1,5 +1,7 @@
 """pyresponse - A simple web framework in Python that respects pure OOP."""
 
+__version__ = "0.1.0"
+
 from pyresponse import fork, lifespan, request, response
 from pyresponse.asgi import AsgiApp
 from pyresponse.error import Error, PyResponseError
@@ -48,6 +50,7 @@ from pyresponse.response.statusline import (
 from pyresponse.server import Server
 
 __all__ = [
+    "__version__",
     # Submodules
     "fork",
     "request",
