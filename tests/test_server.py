@@ -75,8 +75,9 @@ async def test_lifespan_lifecycle():
 
     await app(scope, mock_receive, mock_send)
 
-    assert lifespan.started is True
-    assert lifespan.stopped is True
+    assert lifespan.started() is True
+    assert lifespan.stopped() is True
+
     assert sent == [
         {"type": "lifespan.startup.complete"},
         {"type": "lifespan.shutdown.complete"},

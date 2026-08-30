@@ -1,9 +1,10 @@
 """201 Created status line decorator."""
 
-from pyresponse.response.response import Decorator, Head
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.head import Head
 
 
-class Created(Decorator):
+class Created(Envelope):
     """Decorator setting 201 Created status code."""
 
     async def head(self) -> Head:

@@ -62,3 +62,24 @@ async def test_fork_method():
         res_post = await client.post("/")
         assert res_post.status_code == 200
         assert res_post.text == "got post"
+
+
+@pytest.mark.asyncio
+async def test_fallback_fork():
+    from pyresponse.fork import Fallback
+
+    app = Fallback(
+        Path("/match", lambda req: OK(Body("matched!"))),
+        fallback=lambda req: OK(Body("custom fallback!")),
+    )
+
+    server = Server(app)
+    async with AsyncClient(transport=ASGITransport(app=server), base_url="http://testserver") as client:
+        res_matched = await client.get("/match")
+        assert res_matched.status_code == 200
+        assert res_matched.text == "matched!"
+
+        res_fallback = await client.get("/other")
+        assert res_fallback.status_code == 200
+        assert res_fallback.text == "custom fallback!"
+

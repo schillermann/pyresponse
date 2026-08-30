@@ -1,7 +1,11 @@
 """Exact path matching fork."""
 
 from typing import Any, Callable
-from pyresponse.fork.fork import CallableEndpoint, Endpoint, Fork, UnmatchedEndpoint
+
+from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.fork import Fork
+from pyresponse.fork.unmatched import Unmatched
 from pyresponse.request.request import Request
 
 
@@ -15,12 +19,5 @@ class Path(Fork):
     async def route(self, request: Request) -> Endpoint:
         path = await request.path()
         if path == self._path:
-            return (
-                self._endpoint
-                if isinstance(self._endpoint, Endpoint)
-                else CallableEndpoint(self._endpoint)
-            )
-        return UnmatchedEndpoint()
-
-
-ForkPath = Path
+            return await AsEndpoint(self._endpoint).route(request)
+        return Unmatched()

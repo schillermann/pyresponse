@@ -1,49 +1,46 @@
-"""Regex path matching fork."""
+"""Regex URI path matching fork."""
 
 import re
-from typing import Any, Callable
-from pyresponse.fork.fork import CallableEndpoint, Endpoint, Fork, UnmatchedEndpoint
-from pyresponse.request.params import WithParams
+from typing import Any
+from collections.abc import Callable as TypingCallable
+
+from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.fork import Fork
+from pyresponse.fork.unmatched import UnmatchedEndpoint
+from pyresponse.fork.with_params import WithParams as EndpointWithParams
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
-
-
-class EndpointWithParams(Endpoint):
-    """Endpoint decorator injecting parsed route parameters into the Request."""
-
-    def __init__(self, origin: Endpoint, params: dict[str, str]) -> None:
-        self._origin = origin
-        self._params = params
-
-    def is_matched(self) -> bool:
-        return True
-
-    async def response(self, request: Request) -> Response:
-        return await self._origin.response(WithParams(request, self._params))
+from pyresponse.response.statusline.not_found import NotFound
+from pyresponse.response.text import Text
 
 
 class Regex(Fork):
-    """Route fork matching URI path via regular expression pattern."""
+    """Route fork matching request path using regular expressions and extracting named parameters."""
 
-    def __init__(self, pattern: str, endpoint: Endpoint | Callable[[Request], Any]) -> None:
+    def __init__(
+        self,
+        pattern: str,
+        origin: Endpoint | Fork | TypingCallable[[Request], Any],
+    ) -> None:
         self._pattern = pattern
-        self._endpoint = endpoint
+        self._origin = origin
+
+    def matched(self) -> bool:
+        return True
 
     async def route(self, request: Request) -> Endpoint:
         path = await request.path()
         match = re.match(self._pattern, path)
         if match:
-            endpoint_obj = (
-                self._endpoint
-                if isinstance(self._endpoint, Endpoint)
-                else CallableEndpoint(self._endpoint)
-            )
-            params = match.groupdict()
-            if params:
-                return EndpointWithParams(endpoint_obj, params)
-            return endpoint_obj
+            endpoint = await AsEndpoint(self._origin).route(request)
+            if endpoint.matched():
+                params = match.groupdict()
+                return EndpointWithParams(endpoint, params) if params else endpoint
         return UnmatchedEndpoint()
 
-
-ForkRegex = Regex
-ResourceWithParams = EndpointWithParams
+    async def response(self, request: Request) -> Response:
+        matched = await self.route(request)
+        if matched.matched():
+            return await matched.response(request)
+        return NotFound(Text("Not Found"))

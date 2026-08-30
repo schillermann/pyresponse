@@ -1,11 +1,12 @@
-"""ASGI 3.0 implementation for pyresponse."""
+"""ASGI 3.0 application adapter."""
 
-import inspect
 from typing import Any, Callable
 
-from pyresponse.fork.fork import Endpoint
-from pyresponse.protocol import Lifespan
-from pyresponse.request.request import Base, Request
+from pyresponse.fork.as_endpoint import AsEndpoint
+from pyresponse.fork.endpoint import Endpoint
+from pyresponse.lifespan.lifespan import Lifespan
+from pyresponse.request.asgi import Asgi as AsgiRequest
+from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 
 
@@ -28,10 +29,8 @@ class AsgiApp:
     ) -> None:
         scope_type = scope.get("type", "")
         if scope_type == "http":
-            req = Base(scope, receive)
-            response = self._resolve_endpoint(req)
-            if inspect.isawaitable(response):
-                response = await response
+            req = AsgiRequest(scope, receive)
+            response = await AsEndpoint(self._endpoint).response(req)
 
             head = await response.head()
             await send({
@@ -71,14 +70,3 @@ class AsgiApp:
                     except Exception as exc:
                         await send({"type": "lifespan.shutdown.failed", "message": str(exc)})
                     return
-
-    def _resolve_endpoint(self, req: Request) -> Any:
-        if callable(self._endpoint):
-            return self._endpoint(req)
-        if hasattr(self._endpoint, "response"):
-            return self._endpoint.response(req)
-        if hasattr(self._endpoint, "handle"):
-            return self._endpoint.handle(req)
-        raise TypeError(
-            f"Target {self._endpoint!r} is not callable and does not implement response()"
-        )

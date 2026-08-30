@@ -3,8 +3,8 @@
 from typing import Any, Callable
 
 from pyresponse.asgi import AsgiApp
-from pyresponse.fork.fork import Endpoint
-from pyresponse.protocol import Lifespan
+from pyresponse.fork.endpoint import Endpoint
+from pyresponse.lifespan.lifespan import Lifespan
 from pyresponse.request.request import Request
 
 

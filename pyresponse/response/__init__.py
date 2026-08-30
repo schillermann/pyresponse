@@ -3,16 +3,14 @@
 from pyresponse.response import statusline
 from pyresponse.response.binary import Binary
 from pyresponse.response.body import Body
+from pyresponse.response.envelope import Envelope, ResponseEnvelope
 from pyresponse.response.fake import Fake
+from pyresponse.response.head import Head
 from pyresponse.response.header import Header
 from pyresponse.response.json import Json
 from pyresponse.response.no_content import NoContent
 from pyresponse.response.redirect import Redirect
-from pyresponse.response.response import (
-    Decorator,
-    Head,
-    Response,
-)
+from pyresponse.response.response import Response
 from pyresponse.response.sse import Sse
 from pyresponse.response.statusline import (
     OK,
@@ -31,7 +29,8 @@ __all__ = [
     # Core Interfaces
     "Response",
     "Head",
-    "Decorator",
+    "Envelope",
+    "ResponseEnvelope",
     "Fake",
     # Domain Objects
     "Body",

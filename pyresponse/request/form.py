@@ -1,148 +1,64 @@
-"""Multipart form data and file upload parsing."""
+"""Parsed multipart / form representation."""
 
-import io
-from typing import Any
-from pyresponse.request.request import Decorator, Request
+from types import MappingProxyType
+from typing import Mapping, Sequence
 
-
-class UploadFile:
-    """Encapsulation of an uploaded multipart file."""
-
-    def __init__(
-        self,
-        filename: str,
-        content_type: str,
-        content: bytes,
-        headers: dict[str, str] = {},
-    ) -> None:
-        self._filename = filename
-        self._content_type = content_type
-        self._content = content
-        self._headers = headers
-
-    def filename(self) -> str:
-        return self._filename
-
-    def content_type(self) -> str:
-        return self._content_type
-
-    def headers(self) -> dict[str, str]:
-        return self._headers
-
-    async def read(self) -> bytes:
-        return self._content
-
-    def size(self) -> int:
-        return len(self._content)
+from pyresponse.request.field_not_found import FieldNotFoundError
+from pyresponse.request.upload_file import UploadFile
+from pyresponse.request.upload_not_found import UploadNotFoundError
 
 
-class FormData:
-    """Parsed multipart / form data."""
+class Form:
+    """Parsed multipart / form representation."""
 
     def __init__(
         self,
-        fields: dict[str, list[str]] = {},
-        files: dict[str, list[UploadFile]] = {},
+        fields: Mapping[str, Sequence[str]] = MappingProxyType({}),
+        files: Mapping[str, Sequence[UploadFile]] = MappingProxyType({}),
     ) -> None:
         self._fields = fields
         self._files = files
 
     def field(self, name: str, default: str = "") -> str:
+        """Return field value, returning default if provided or failing fast with FieldNotFoundError."""
         if name in self._fields and self._fields[name]:
             return self._fields[name][0]
-        return default
+        if default:
+            return default
+        raise FieldNotFoundError(name)
 
-    def field_list(self, name: str) -> list[str]:
-        return self._fields.get(name, [])
+    def field_or(self, name: str, fallback: str) -> str:
+        """Return field value or explicit fallback string."""
+        if name in self._fields and self._fields[name]:
+            return self._fields[name][0]
+        return fallback
 
-    def file(self, name: str) -> UploadFile | None:
+    def field_list(self, name: str) -> Sequence[str]:
+        """Return all values associated with a field name."""
+        return self._fields.get(name, ())
+
+    def file(self, name: str, default: UploadFile | None = None) -> UploadFile:
+        """Return uploaded file, returning default if provided or failing fast with UploadNotFoundError."""
         if name in self._files and self._files[name]:
             return self._files[name][0]
-        return None
+        if default is not None:
+            return default
+        raise UploadNotFoundError(name)
 
-    def file_list(self, name: str) -> list[UploadFile]:
-        return self._files.get(name, [])
+    def file_or(self, name: str, fallback: UploadFile) -> UploadFile:
+        """Return uploaded file or explicit fallback file."""
+        if name in self._files and self._files[name]:
+            return self._files[name][0]
+        return fallback
 
-    def fields(self) -> dict[str, list[str]]:
-        return self._fields
+    def file_list(self, name: str) -> Sequence[UploadFile]:
+        """Return all files associated with a field name."""
+        return self._files.get(name, ())
 
-    def files(self) -> dict[str, list[UploadFile]]:
-        return self._files
+    def has(self, name: str) -> bool:
+        """Check if form field is present."""
+        return name in self._fields
 
-
-class Multipart(Decorator):
-    """Streaming multipart / form-data parser for file uploads and form fields."""
-
-    async def form(self) -> FormData:
-        chunks = []
-        async for chunk in self._origin.body():
-            chunks.append(chunk)
-        raw_body = b"".join(chunks)
-
-        header = await self._origin.head()
-        content_type_header = header.as_string("content-type", default="")
-        if not content_type_header:
-            return FormData()
-
-        fields: dict[str, list[str]] = {}
-        files: dict[str, list[UploadFile]] = {}
-
-        try:
-            try:
-                import python_multipart as multipart_mod
-            except ImportError:
-                import multipart as multipart_mod
-
-            headers = {"Content-Type": content_type_header.encode("latin1")}
-
-            def on_field(field_obj: Any) -> None:
-                name = (
-                    field_obj.field_name.decode("utf-8", errors="replace")
-                    if isinstance(field_obj.field_name, bytes)
-                    else str(field_obj.field_name)
-                )
-                val = (
-                    field_obj.value.decode("utf-8", errors="replace")
-                    if isinstance(field_obj.value, bytes)
-                    else str(field_obj.value)
-                )
-                fields.setdefault(name, []).append(val)
-
-            def on_file(file_obj: Any) -> None:
-                field_name = (
-                    file_obj.field_name.decode("utf-8", errors="replace")
-                    if isinstance(file_obj.field_name, bytes)
-                    else str(file_obj.field_name)
-                )
-                file_name = (
-                    file_obj.file_name.decode("utf-8", errors="replace")
-                    if isinstance(file_obj.file_name, bytes)
-                    else (str(file_obj.file_name) if file_obj.file_name else "")
-                )
-
-                file_obj.file_object.seek(0)
-                content = file_obj.file_object.read()
-
-                ct = "application/octet-stream"
-                for h_name, h_val in getattr(file_obj, "headerlist", []):
-                    h_n = (
-                        h_name.decode("latin1").lower()
-                        if isinstance(h_name, bytes)
-                        else str(h_name).lower()
-                    )
-                    if h_n == "content-type":
-                        ct = h_val.decode("latin1") if isinstance(h_val, bytes) else str(h_val)
-
-                upload = UploadFile(filename=file_name, content_type=ct, content=content)
-                files.setdefault(field_name, []).append(upload)
-
-            multipart_mod.parse_form(
-                headers=headers,
-                input_stream=io.BytesIO(raw_body),
-                on_field=on_field,
-                on_file=on_file,
-            )
-        except Exception:
-            pass
-
-        return FormData(fields=fields, files=files)
+    def has_file(self, name: str) -> bool:
+        """Check if uploaded file is present."""
+        return name in self._files

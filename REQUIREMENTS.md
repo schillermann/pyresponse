@@ -12,21 +12,25 @@
 1. **No Annotations/Decorators as Route Handlers**:
    - No `@app.get(...)` or `@app.post(...)`.
    - Handlers are first-class domain objects or functions receiving a `Request` and returning a `Response`.
-2. **Composition & Decorator Pattern**:
-   - Responses are composed by wrapping domain objects in composable decorators (`Body`, `Header`, `StatusLine`, `OK`, `Json`, `Text`, `Binary`, `Sse`, `Redirect`, `NoContent`).
-   - Requests provide composable inspection and streaming extraction (`Method`, `Path`, `Header`, `QueryParams`, `PathParams`, `Json`, `Multipart`).
-   - Routing is built with composable forks (`Fork`, `Path`, `Regex`, `Method`).
-3. **100% Code-Free Constructors**:
-   - Constructors only perform parameter assignments (`self._param = param`).
+2. **Composition & Envelope Pattern**:
+   - Responses are composed by wrapping domain objects in composable decorators/envelopes (`Body`, `Header`, `StatusLine`, `OK`, `Json`, `Text`, `Binary`, `Sse`, `Redirect`, `NoContent`, `ResponseEnvelope`).
+   - Requests provide composable inspection and streaming extraction (`Method`, `Path`, `Header`, `QueryParams`, `PathParams`, `Json`, `Multipart`, `Form`, `RequestEnvelope`).
+   - Routing is built with composable forks (`Fork`, `Path`, `Regex`, `Method`, `Prefix`, `Trap`).
+3. **1-Class = 1-File Strict Modularity**:
+   - Every domain object, exception, and protocol lives in its own dedicated source file.
+4. **100% Code-Free Constructors**:
+   - Constructors strictly perform attribute assignments (`self._param = param`).
    - No business logic, validation, network calls, or conditionals inside `__init__`.
-4. **Never Accept, Never Return `None` (Fail Fast & Explicit Domain Models)**:
+   - Default collections are strictly immutable (`MappingProxyType({})`, `()`).
+5. **Never Accept, Never Return `None` (Fail Fast & Explicit Domain Models)**:
    - Never return `None` or use `None` checks for missing values.
    - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFoundError`, `RouteNotFoundError`, `ParamNotFoundError`).
    - Use fallback decorators or explicit defaults for optional values rather than dummy null objects.
-5. **No Getters / Setters / Anemic DTOs**:
-   - Encapsulate data and behavior together.
-6. **No Static Methods / No Global Singletons**:
+6. **No Getters / Setters / Anemic DTOs**:
+   - Encapsulate data and behavior together within cohesive domain models.
+7. **No Static Methods / No Global Singletons**:
    - Composition root handles dependency injection explicitly.
+
 
 ---
 
@@ -38,8 +42,9 @@
 
 ### 2.2 Core Interfaces
 - **`Request`**:
-  - `head()`: Provides header encapsulation (`Header`).
+  - `head()`: Provides request head encapsulation (`Head`).
   - `method()`: Provides HTTP method string.
+
   - `path()`: Provides URI path string.
   - `query_string()`: Provides raw query bytes.
   - `path_params()`: Provides extracted route path parameters.
@@ -81,6 +86,10 @@
 - `Path`: Exact URI path matcher fork.
 - `Regex`: Regex URI matcher with parameter extraction fork.
 - `Method`: HTTP method filter fork.
+- `Prefix`: URI path prefix matcher fork for mounting sub-routers.
+- `Get`, `Post`, `Put`, `Delete`, `Patch`, `Options`, `Head`: Composable HTTP method-specific routing forks.
+- `Trap` / `Catch`: Exception trapping decorator converting domain errors to HTTP error responses.
+
 
 ---
 

@@ -1,9 +1,10 @@
 """204 No Content status line decorator."""
 
-from pyresponse.response.response import Decorator, Head
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.head import Head
 
 
-class StatusLineNoContent(Decorator):
+class NoContent(Envelope):
     """Decorator setting 204 No Content status code."""
 
     async def head(self) -> Head:
@@ -12,6 +13,3 @@ class StatusLineNoContent(Decorator):
             status=204,
             headers=origin_head.headers(),
         )
-
-
-NoContent = StatusLineNoContent

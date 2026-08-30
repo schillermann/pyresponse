@@ -1,9 +1,10 @@
 """500 Internal Server Error status line decorator."""
 
-from pyresponse.response.response import Decorator, Head
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.head import Head
 
 
-class ServerError(Decorator):
+class ServerError(Envelope):
     """Decorator setting 500 Internal Server Error status code."""
 
     async def head(self) -> Head:
