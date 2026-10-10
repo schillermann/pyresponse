@@ -41,6 +41,40 @@ Server(
 
 ---
 
+## 🛠️ CLI Usage
+
+`pyresponse` includes an extensible, Pure OOP developer console available via `pyresponse` or the short alias `pr`:
+
+### Inspect Routes
+```bash
+pr routes
+# Lists all registered HTTP and WebSocket endpoints in a clean ANSI table
+```
+
+### Start Development Server
+```bash
+pr serve
+# Or specify a custom entrypoint:
+pr serve main:app
+```
+
+### Help Menu
+```bash
+pr help
+# Displays all built-in commands and installed plugin commands
+```
+
+### Ecosystem & Plugins
+Commands from installed extensions (e.g. [pyaidoc](https://github.com/schillermann/pyaidoc)) are discovered automatically via Python entry points:
+```bash
+pr ai:tools   # Inspect AI agent function calls and parameters
+pr ai:docs    # Generate standalone HTML AI reference documentation
+```
+
+For custom command creation, see the [Developer Console & CLI Guide](docs/CLI.md).
+
+---
+
 ## 🎯 Motivation & Philosophy
 
 Most modern Python web frameworks (FastAPI, Flask, Django) heavily rely on:
