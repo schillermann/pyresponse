@@ -2,6 +2,10 @@
 
 from typing import Protocol
 
+from pyresponse.cli.arguments import Arguments
+from pyresponse.cli.exit_code import ExitCode, Failure
+from pyresponse.cli.output import ConsoleOutput, Output
+
 
 class CliCommand(Protocol):
     """Contract for an autonomous CLI command."""
@@ -12,7 +16,7 @@ class CliCommand(Protocol):
 
     def matches(self, verb: str) -> bool: ...
 
-    def execute(self, args: list[str]) -> int: ...
+    def execute(self, args: Arguments) -> ExitCode: ...
 
 
 class CommandEnvelope(CliCommand):
@@ -30,16 +34,16 @@ class CommandEnvelope(CliCommand):
     def matches(self, verb: str) -> bool:
         return self._origin.matches(verb)
 
-    def execute(self, args: list[str]) -> int:
+    def execute(self, args: Arguments) -> ExitCode:
         return self._origin.execute(args)
-
 
 
 class UnknownCommand:
     """Null object fallback for unrecognized CLI verbs."""
 
-    def __init__(self, verb: str) -> None:
+    def __init__(self, verb: str, output: Output = ConsoleOutput()) -> None:
         self._verb = verb
+        self._output = output
 
     def name(self) -> str:
         return self._verb
@@ -50,6 +54,6 @@ class UnknownCommand:
     def matches(self, verb: str) -> bool:
         return False
 
-    def execute(self, args: list[str]) -> int:
-        print(f"Unknown command: '{self._verb}'. Run 'pyresponse help' for available commands.")
-        return 1
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        self._output.error(f"Unknown command: '{self._verb}'. Run 'pyresponse help' for available commands.")
+        return Failure(1)

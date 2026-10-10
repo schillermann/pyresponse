@@ -62,10 +62,10 @@ class DatabaseMigrateCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("db:migrate", "migrate")
 
-    def execute(self, args: list[str]) -> int:
+    def execute(self, args: Arguments) -> ExitCode:
         self._migration_service.apply()
         print("✅ Migrations applied successfully.")
-        return 0
+        return Success()
 ```
 
 ---
@@ -76,12 +76,20 @@ In your project, compose your application's CLI explicitly:
 
 ```python
 #!/usr/bin/env python3
-import sys
-from pyresponse.cli import ForkCli, HelpCommand, ServeCommand, RoutesCommand
+from pyresponse.cli import (
+    Arguments,
+    ExitCode,
+    ForkCli,
+    HelpCommand,
+    RoutesCommand,
+    ServeCommand,
+    Success,
+    SysArguments,
+)
 from my_app.routes import AppRoutes
 from my_app.custom_command import DatabaseMigrateCommand
 
-def main(args: list[str]) -> int:
+def main(args: Arguments = SysArguments()) -> ExitCode:
     commands = (
         DatabaseMigrateCommand(),
         RoutesCommand(lambda: AppRoutes().fork()),
@@ -91,7 +99,7 @@ def main(args: list[str]) -> int:
     return ForkCli((*commands, help_cmd), fallback=help_cmd).execute(args)
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    main().terminate()
 ```
 
 ---

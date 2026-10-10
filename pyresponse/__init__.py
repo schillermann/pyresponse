@@ -1,13 +1,14 @@
 """pyresponse - A simple web framework in Python that respects pure OOP."""
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 from pyresponse import fork, lifespan, request, response
 from pyresponse.asgi import AsgiApp
 from pyresponse.cli import (
-    AliasCommand, CliApp, CliCommand, CliRoutes, DiscoveredCommands, FixedRoutes,
-    ForkCli, HelpCommand, RouteEntry, Routes, RoutesCommand, RoutesTable,
-    ServeCommand, SourceRoutes, TableRow, UnknownCommand,
+    AliasCommand, Arguments, ArgumentsFrom, CliApp, CliCommand, CliRoutes,
+    DiscoveredCommands, ExitCode, Failure, FixedRoutes, ForkCli, HelpCommand,
+    RouteEntry, Routes, RoutesCommand, RoutesTable, ServeCommand, SourceRoutes,
+    Success, SysArguments, TableRow, UnknownCommand,
 )
 from pyresponse.error import Error
 from pyresponse.fork import (
@@ -64,5 +65,6 @@ __all__ = [
     "CliApp", "ForkCli", "CliCommand", "AliasCommand", "UnknownCommand",
     "HelpCommand", "ServeCommand", "RoutesCommand", "SourceRoutes",
     "RoutesTable", "TableRow", "RouteEntry", "Routes", "CliRoutes",
-    "FixedRoutes", "DiscoveredCommands",
+    "FixedRoutes", "DiscoveredCommands", "Arguments", "ArgumentsFrom",
+    "SysArguments", "ExitCode", "Success", "Failure",
 ]

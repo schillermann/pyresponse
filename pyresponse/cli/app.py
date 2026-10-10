@@ -1,39 +1,28 @@
 """Standard CLI Application composition in Pure OOP."""
 
-from typing import Sequence
+from pyresponse.cli.app_commands import AppCommands
+from pyresponse.cli.arguments import Arguments
 from pyresponse.cli.command import CliCommand
+from pyresponse.cli.exit_code import ExitCode
 from pyresponse.cli.fork import ForkCli
 from pyresponse.cli.help import HelpCommand
-from pyresponse.cli.serve import ServeCommand
-from pyresponse.cli.routes import RoutesCommand
-from pyresponse.cli.discovered import DiscoveredCommands
+from pyresponse.cli.output import ConsoleOutput, Output
 
 
 class CliApp:
-    """Standard composite CLI runner."""
+    """Composite CLI application runner in Pure OOP."""
 
     def __init__(
         self,
         *commands: CliCommand,
         app_target: str = "main:app",
+        output: Output = ConsoleOutput(),
     ) -> None:
         self._commands = commands
         self._app_target = app_target
+        self._output = output
 
-    def execute(self, args: list[str]) -> int:
-        discovered = DiscoveredCommands().commands()
-        all_commands: list[CliCommand] = list(self._commands)
-        all_commands.extend(discovered)
-
-        # Built-in fallback commands
-        if not any(c.matches("routes") for c in all_commands):
-            all_commands.append(RoutesCommand())
-
-        if not any(c.matches("serve") for c in all_commands):
-            all_commands.append(ServeCommand(self._app_target))
-
-        help_cmd = HelpCommand(all_commands)
-        if not any(c.matches("help") for c in all_commands):
-            all_commands.append(help_cmd)
-
-        return ForkCli(all_commands, fallback=help_cmd).execute(args)
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        all_cmds = AppCommands(self._commands, self._app_target, self._output).commands()
+        help_cmd = HelpCommand(all_cmds, output=self._output)
+        return ForkCli(all_cmds, fallback=help_cmd, output=self._output).execute(args)

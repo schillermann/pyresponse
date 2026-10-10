@@ -1,13 +1,13 @@
-"""CLI entry point for pyresponse."""
+"""CLI entry point for pyresponse in Pure OOP."""
 
-import sys
 from pyresponse.cli.app import CliApp
+from pyresponse.cli.arguments import Arguments, SysArguments
+from pyresponse.cli.exit_code import ExitCode
 
 
-def main(args: list[str] | None = None) -> int:
-    cmd_args = sys.argv[1:] if args is None else args
-    return CliApp().execute(cmd_args)
+def main(args: Arguments = SysArguments()) -> ExitCode:
+    return CliApp().execute(args)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main().terminate()

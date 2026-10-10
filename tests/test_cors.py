@@ -4,6 +4,7 @@ import pytest
 
 from pyresponse import Get, Ok, Text
 from pyresponse.fork.cors import Cors as ForkCors
+from pyresponse.fork.fork_envelope import ForkEnvelope
 from pyresponse.request import Fake as FakeRequest
 from pyresponse.response.cors import Cors as ResponseCors
 
@@ -35,6 +36,11 @@ async def test_cors_fork_preflight_and_routing():
         Get("/api/data", lambda req: Ok(Text("payload"))),
         allow_origin="*",
     )
+
+    assert issubclass(ForkCors, ForkEnvelope)
+    assert isinstance(route, ForkEnvelope)
+    assert len(route.routes()) == 1
+    assert route.routes()[0].path() == "/api/data"
 
     # 1. Preflight OPTIONS request handled automatically with 204 NoContent
     options_req = FakeRequest(method="OPTIONS", path="/api/data")

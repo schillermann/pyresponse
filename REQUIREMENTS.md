@@ -115,8 +115,9 @@
 - `HeaderFork`: Header-based routing fork (API versioning / content negotiation).
 - `GuardedEndpoint`, `GuardedBranch`: Conditional endpoint protection based on request predicate.
 - `MeasuredEndpoint`, `LoggedFork`: Diagnostic metrics and logging for routes.
-- `Cors`: Route-level CORS handling for preflight and actual requests.
-- `Trap`: Exception trapping decorator converting domain errors to HTTP error responses.
+- `ForkEnvelope`: Base decorator pattern for router forks, delegating matched, routes, route, and response.
+- `Cors`: Route-level CORS handling for preflight and actual requests (decorating `ForkEnvelope`).
+- `Trap`: Exception trapping decorator converting domain errors to HTTP error responses (decorating `ForkEnvelope`).
 - `Fallback`: Fallback endpoint decorator when no child branch matches.
 
 ### 2.6 Lifespan Management
@@ -125,13 +126,16 @@
 - `WithStartup`, `WithShutdown`: Decorators attaching startup/shutdown hooks.
 
 ### 2.7 Developer Console & CLI (`pyresponse.cli`)
-- `CliCommand`: Protocol defining autonomous console commands (`name()`, `description()`, `matches(verb)`, `execute(args)`).
+- `Arguments`: CLI arguments domain object (`Arguments`, `ArgumentsFrom`, `SysArguments`), replacing primitive `list[str]`.
+- `ExitCode`: Process termination domain object (`ExitCode`, `Success`, `Failure`), replacing primitive `int`.
+- `CliCommand`: Protocol defining autonomous console commands (`name()`, `description()`, `matches(verb)`, `execute(args: Arguments) -> ExitCode`).
 - `ForkCli`: Composite command router dispatching verbs to matching commands without procedural branching.
 - `ServeCommand`: Command starting the development ASGI server via Uvicorn with auto-reload.
 - `RoutesCommand`: Command inspecting `Fork` router trees and rendering formatted route tables via `SourceRoutes` and `RoutesTable`.
 - `HelpCommand`: Interactive and searchable help display.
 - `DiscoveredCommands`: Discovery decorator loading external commands registered via entry point group `pyresponse.commands`.
-- `CliApp`: Standard composite CLI runner incorporating built-in and discovered commands.
+- `AppCommands`: Composite application commands assembling user-defined, auto-discovered, and framework CLI commands.
+- `CliApp`: Autonomous composite CLI runner executing commands.
 
 ---
 

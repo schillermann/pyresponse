@@ -2,6 +2,9 @@
 
 import importlib
 from typing import Any
+
+from pyresponse.cli.arguments import Arguments
+from pyresponse.cli.exit_code import ExitCode, Failure, Success
 from pyresponse.cli.output import ConsoleOutput, Output
 from pyresponse.cli.target import AppTarget
 
@@ -32,14 +35,14 @@ class ServeCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("serve", "server", "start")
 
-    def execute(self, args: list[str]) -> int:
-        raw_target = args[0] if args else self._app_target
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        raw_target = args.first_or(self._app_target)
         target = AppTarget(raw_target).name()
         self._output.print(f"🚀 Starting PyResponse server: '{target}' on http://{self._host}:{self._port} ...")
         try:
             uvicorn: Any = importlib.import_module("uvicorn")
             uvicorn.run(target, host=self._host, port=self._port, reload=self._reload)
-            return 0
+            return Success()
         except ImportError:
             self._output.error("❌ Uvicorn is required to run the server. Install via 'pip install uvicorn[standard]'.")
-            return 1
+            return Failure(1)

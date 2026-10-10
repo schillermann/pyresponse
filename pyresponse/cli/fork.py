@@ -1,8 +1,12 @@
 """CLI command router in Pure OOP."""
 
-from typing import Sequence
+from collections.abc import Sequence
+
+from pyresponse.cli.arguments import Arguments
 from pyresponse.cli.command import CliCommand, UnknownCommand
+from pyresponse.cli.exit_code import ExitCode
 from pyresponse.cli.help import HelpCommand
+from pyresponse.cli.output import ConsoleOutput, Output
 
 
 class ForkCli:
@@ -12,16 +16,18 @@ class ForkCli:
         self,
         commands: Sequence[CliCommand],
         fallback: CliCommand = HelpCommand(),
+        output: Output = ConsoleOutput(),
     ) -> None:
         self._commands = commands
         self._fallback = fallback
+        self._output = output
 
-    def execute(self, args: list[str]) -> int:
-        if not args:
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        if args.empty():
             return self._fallback.execute(args)
-        verb = args[0]
-        rest = args[1:]
+        verb = args.first()
+        rest = args.sub(1)
         for command in self._commands:
             if command.matches(verb):
                 return command.execute(rest)
-        return UnknownCommand(verb).execute(rest)
+        return UnknownCommand(verb, self._output).execute(rest)

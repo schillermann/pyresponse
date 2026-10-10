@@ -13,7 +13,7 @@ from pyresponse import (
     Server,
     ServerError,
 )
-from pyresponse.fork import Trap, Fork, Get, Post, Trap
+from pyresponse.fork import Fork, ForkEnvelope, Get, Post, Trap
 from pyresponse.request import Header as RequestHeader
 from pyresponse.response import Body, Json
 
@@ -34,6 +34,11 @@ async def test_trap_specific_exception():
         },
 
     )
+
+    assert issubclass(Trap, ForkEnvelope)
+    assert isinstance(app, ForkEnvelope)
+    assert len(app.routes()) == 1
+    assert app.routes()[0].path() == "/secure"
 
     server = Server(app)
     async with AsyncClient(transport=ASGITransport(app=server), base_url="http://testserver") as client:
@@ -79,6 +84,10 @@ async def test_catch_alias_and_composite_fork():
             KeyError: lambda exc, req: BadRequest(Json({"error": "Invalid key"})),
         },
     )
+
+    assert len(app.routes()) == 2
+    assert app.routes()[0].path() == "/item"
+    assert app.routes()[1].path() == "/item"
 
     server = Server(app)
     async with AsyncClient(transport=ASGITransport(app=server), base_url="http://testserver") as client:

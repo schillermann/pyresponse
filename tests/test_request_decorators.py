@@ -2,9 +2,11 @@
 
 import pytest
 from pyresponse.cli import (
+    Arguments,
     CliCommand,
     ColorOutput,
     CommandEnvelope,
+    ExitCode,
     MemoryOutput,
     OutputEnvelope,
     PrefixedOutput,
@@ -65,17 +67,17 @@ def test_command_envelope():
         def matches(self, verb: str) -> bool:
             return verb == "inner"
 
-        def execute(self, args: list[str]) -> int:
+        def execute(self, args: Arguments) -> ExitCode:
             calls.append(args)
-            return 42
+            return ExitCode(42)
 
     cmd = CommandEnvelope(InnerCmd())
     assert cmd.name() == "inner"
     assert cmd.description() == "Inner command description"
     assert cmd.matches("inner") is True
     assert cmd.matches("other") is False
-    assert cmd.execute(["arg1", "arg2"]) == 42
-    assert calls == [["arg1", "arg2"]]
+    assert cmd.execute(Arguments("arg1", "arg2")) == ExitCode(42)
+    assert calls == [Arguments("arg1", "arg2")]
 
 
 def test_color_output_decorator():

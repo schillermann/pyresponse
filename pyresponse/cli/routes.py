@@ -1,6 +1,8 @@
 """HTTP Routes inspection and table formatting for pyresponse CLI in Pure OOP."""
 
 from typing import Any, Protocol, Sequence, runtime_checkable
+from pyresponse.cli.arguments import Arguments
+from pyresponse.cli.exit_code import ExitCode, Failure, Success
 from pyresponse.cli.output import ConsoleOutput, Output
 from pyresponse.cli.target import AppTarget, TargetNotFound
 from pyresponse.fork.route_entry import EndpointRoutes, RouteEntry
@@ -60,9 +62,10 @@ class SourceRoutes(Routes):
         self._prefix = prefix
 
     def entries(self, target_name: str = "") -> Sequence[RouteEntry]:
-        if isinstance(self._origin, Routes):
+        try:
             return self._origin.entries(target_name)
-        return FixedRoutes(self._origin, self._prefix).entries(target_name)
+        except AttributeError:
+            return FixedRoutes(self._origin, self._prefix).entries(target_name)
 
 
 class TableRow:
@@ -130,18 +133,23 @@ class RoutesCommand:
     def matches(self, verb: str) -> bool:
         return verb in ("routes", "route:list")
 
-    def execute(self, args: list[str]) -> int:
-        target_name = args[0] if args else ""
+    def execute(self, args: Arguments = Arguments()) -> ExitCode:
+        has_target = not args.empty()
+        target_name = args.first() if has_target else ""
         try:
-            entries = SourceRoutes(self._routes).entries(target_name)
+            entries = (
+                SourceRoutes(self._routes).entries(target_name)
+                if has_target
+                else SourceRoutes(self._routes).entries()
+            )
             self._output.print(str(RoutesTable(entries)))
-            return 0
+            return Success()
         except TargetNotFound as exc:
             self._output.error(f"❌ {exc}")
             self._output.error("   Specify target as argument (e.g. 'pyr routes app:app') or set PYRESPONSE_APP.")
-            return 1
+            return Failure(1)
         except (ImportError, AttributeError) as exc:
             target_display = target_name or AppTarget(target_name).name()
             self._output.error(f"❌ Could not load application target '{target_display}': {exc}")
             self._output.error("   Specify target as argument (e.g. 'pyr routes app:app') or set PYRESPONSE_APP.")
-            return 1
+            return Failure(1)

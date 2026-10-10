@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-10-10
+
+### Added
+- `ForkEnvelope` decorator pattern for router forks, delegating `matched()`, `routes()`, `route()`, and `response()`.
+- Pure OOP CLI domain objects: `Arguments` (`ArgumentsFrom`, `SysArguments`, `ArgumentNotFound`) and `ExitCode` (`Success`, `Failure`), replacing primitive `list[str]` and `int`.
+- `AppCommands` domain composite assembling application, discovered, and framework CLI commands without procedural list mutations.
+
+### Changed
+- Refactored `Cors` and `Trap` from inheriting `Fork` to pure `ForkEnvelope` decorators.
+- Eliminated static factory tricks in `Fork` and removed `CompositeFork`.
+- Enforced Elegant Objects naming conventions: removed all `is_` prefixes (`success()`, `failure()`, `empty()`) and abolished generic filler class names (`DefaultCommands`, `StandardCommands`).
+- Replaced `isinstance` type inspections with polymorphism and duck typing across route discovery.
+- Eliminated hidden getters like `__int__()` from `ExitCode` and dummy empty-string fallbacks from `RoutesCommand`.
+
 ## [0.4.0] - 2026-10-10
 
 ### Added
