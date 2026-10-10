@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyresponse"
-version = "0.3.0"
+version = "0.3.1"
 description = "A simple web framework in Python that respects OOP."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,7 +28,7 @@ dependencies = [
 
 [project.scripts]
 pyresponse = "pyresponse.cli.__main__:main"
-pr = "pyresponse.cli.__main__:main"
+pyr = "pyresponse.cli.__main__:main"
 
 [project.optional-dependencies]
 dev = [

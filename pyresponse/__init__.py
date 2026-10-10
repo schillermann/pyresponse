@@ -1,6 +1,6 @@
 """pyresponse - A simple web framework in Python that respects pure OOP."""
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 from pyresponse import fork, lifespan, request, response
 from pyresponse.asgi import AsgiApp
