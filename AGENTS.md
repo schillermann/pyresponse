@@ -22,6 +22,18 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
     - `chore`: Maintenance tasks
   - Breaking Changes: Use `!` before `:` or `BREAKING CHANGE: <description>` in the footer.
 
+- **`create git message` Workflow & Pre-Commit Protocol**:
+  - When the user prompts `create git message` (or asks to generate/prepare a commit message):
+    1. **Type Checking (`pyright`)**: Run `pyright` strictly from the project's virtual environment (`.venv/bin/pyright <modified_python_files>`) on the modified/staged Python files only. Never use a global or external instance.
+    2. **Fix Type Errors**: Resolve all errors identified by `pyright` immediately.
+    3. **Run Tests**: Execute `pytest` (e.g. `.venv/bin/pytest`) to guarantee all tests pass.
+    4. **Bump Version**: Increment the version number according to Semantic Versioning (`MAJOR.MINOR.PATCH`) across:
+       - `pyproject.toml` (`version = "..."`)
+       - `pyresponse/__init__.py` (`__version__ = "..."`)
+       - `tests/test_domain_objects.py` (`assert pyresponse.__version__ == "..."`)
+       - `CHANGELOG.md` (add `## [x.y.z] - YYYY-MM-DD`)
+    5. **Generate Commit Message**: Propose or generate the Conventional Commit message reflecting the staged changes.
+
 ---
 
 ## 2. Core Architecture & Philosophy (Elegant ObjectsPure OOP)

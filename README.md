@@ -62,3 +62,10 @@ Most modern Python web frameworks (FastAPI, Flask, Django) heavily rely on:
 - [Developer Console & CLI Guide](docs/CLI.md): Extensible pure OOP CLI architecture, route inspection (`routes`), and server runner (`serve`).
 - [Architecture & Requirements](REQUIREMENTS.md): Full architectural specifications, interface details, and compatibility guidelines.
 
+---
+
+## 🧩 Extensions
+
+- [pyaidoc](https://github.com/schillermann/pyaidoc): Zero-annotation, pure OOP HTML documentation and CLI tooling for AI agent tools.
+- [pyfakepg](https://github.com/schillermann/pyfakepg): In-memory fake PostgreSQL extension for testing and developing pure OOP database applications.
+
