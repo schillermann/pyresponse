@@ -141,4 +141,4 @@ async def test_domain_wrappers_and_naming():
 def test_package_version():
     import pyresponse
 
-    assert pyresponse.__version__ == "0.5.0"
+    assert pyresponse.__version__ == "0.5.1"

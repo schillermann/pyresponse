@@ -156,12 +156,6 @@ def test_pyresponse_main_entrypoint() -> None:
     assert pyresponse.__main__.main(Arguments("help")) == Success()
 
 
-def test_pyr_main_entrypoint() -> None:
-    import pyr.__main__
-
-    assert pyr.__main__.main(Arguments("help")) == Success()
-
-
 def test_routes_command_missing_target() -> None:
     mem = MemoryOutput()
     cmd = RoutesCommand(output=mem)

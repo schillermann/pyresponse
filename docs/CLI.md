@@ -17,15 +17,15 @@
 
 ## 2. Built-in Commands
 
-When running `pyresponse` directly via CLI or `CliApp`:
+When running `pyresponse` or the `pyr` alias directly via CLI or `CliApp`:
 
 | Command | Description | Example |
 | :--- | :--- | :--- |
-| **`serve`** | Starts the ASGI development server with auto-reload. | `pyresponse serve main:app` |
-| **`routes`** | Inspects and displays all registered HTTP routes in an ANSI table. | `pyresponse routes` |
-| **`help`** | Shows available commands with usage descriptions. | `pyresponse help` |
+| **`serve`** | Starts the ASGI development server with auto-reload. | `pyr serve main:app` |
+| **`routes`** | Inspects and displays all registered HTTP routes in an ANSI table. | `pyr routes` |
+| **`help`** | Shows available commands with usage descriptions. | `pyr help` |
 
-### Terminal Route Inspection (`pyresponse routes`)
+### Terminal Route Inspection (`pyr routes`)
 `RoutesCommand` inspects a `Fork` tree and prints a clean overview:
 ```text
 METHOD    PATH                                    HANDLER
@@ -44,7 +44,7 @@ Total: 56 routes
 To create a new command, implement the `CliCommand` protocol:
 
 ```python
-from pyresponse.cli import CliCommand
+from pyresponse.cli import Arguments, CliCommand, ExitCode, Success
 
 
 class DatabaseMigrateCommand:

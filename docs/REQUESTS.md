@@ -48,28 +48,28 @@ from pyresponse.request import (
 
 async def handler(req):
     # Method and Path
-    method_str = Method(req).value()  # e.g. "GET"
-    path_str = Path(req).value()      # e.g. "/users/10"
+    method_str = await Method(req).value()  # e.g. "GET"
+    path_str = await Path(req).value()      # e.g. "/users/10"
 
     # Header lookup (fails fast with HeaderNotFound if missing and no default provided)
-    trace_id = Header(req, "x-trace-id", default="none").value()
+    trace_id = await Header(req, "x-trace-id", default="none").value()
 
     # Query Parameters
     qp = QueryParams(req)
-    page = qp.param("page", default="1")
-    tags = qp.params("tag")  # returns list of values for ?tag=a&tag=b
+    page = await qp.param("page", default="1")
+    tags = await qp.params("tag")  # returns list of values for ?tag=a&tag=b
 
     # Path Parameters (extracted from Regex or routing matches)
-    user_id = PathParams(req).param("id")
+    user_id = await PathParams(req).param("id")
 
     # Cookies
-    session = Cookies(req).cookie("session_id", default="")
+    session = await Cookies(req).cookie("session_id", default="")
 
     # Specialized headers
-    client_host = Host(req).value()
-    user_agent = UserAgent(req).value()
-    accept_mime = Accept(req).value()
-    content_type = ContentType(req).value()
+    client_host = await Host(req).value()
+    user_agent = await UserAgent(req).value()
+    accept_mime = await Accept(req).value()
+    content_type = await ContentType(req).value()
 ```
 
 ---
@@ -81,12 +81,12 @@ Extract credentials cleanly without manual string splitting:
 ### Bearer Token
 Extracts the token from `Authorization: Bearer <token>`:
 ```python
-from pyresponse.request import BearerToken, HeaderNotFound
+from pyresponse.request import AuthNotFound, BearerToken
 
 async def protected_endpoint(req):
     try:
-        token = BearerToken(req).value()
-    except HeaderNotFound:
+        token = await BearerToken(req).token()
+    except AuthNotFound:
         # Fails fast if Authorization header is missing or not a Bearer token
         ...
 ```
@@ -98,8 +98,8 @@ from pyresponse.request import BasicAuth
 
 async def admin_endpoint(req):
     auth = BasicAuth(req)
-    username = auth.username()
-    password = auth.password()
+    username = await auth.username()
+    password = await auth.password()
 ```
 
 ---

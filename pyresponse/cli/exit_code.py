@@ -5,42 +5,37 @@ from collections.abc import Callable
 from typing import Any
 
 
-class ExitCode:
+class ExitCode(int):
     """Represents a CLI command execution exit code in Pure OOP."""
 
-    def __init__(self, code: int = 0) -> None:
-        self._code = code
+    def __new__(cls, code: int = 0) -> "ExitCode":
+        return super().__new__(cls, code)
 
     def success(self) -> bool:
         """Check if execution completed successfully."""
-        return self._code == 0
+        return int(self) == 0
 
     def failure(self) -> bool:
         """Check if execution failed."""
-        return self._code != 0
+        return int(self) != 0
 
     def terminate(self) -> None:
         """Actively terminate the process with this exit code."""
-        sys.exit(self._code)
+        sys.exit(int(self))
 
     def apply_to(self, action: Callable[[int], Any]) -> Any:
         """Apply this exit code to a consumer action without exposing internals."""
-        return action(self._code)
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, ExitCode):
-            return self._code == other._code
-        return False
+        return action(int(self))
 
     def __repr__(self) -> str:
-        return f"ExitCode({self._code})"
+        return f"ExitCode({int(self)})"
 
 
 class Success(ExitCode):
     """Successful exit code (0)."""
 
-    def __init__(self) -> None:
-        super().__init__(0)
+    def __new__(cls) -> "Success":
+        return int.__new__(cls, 0)
 
     def success(self) -> bool:
         return True
@@ -52,8 +47,8 @@ class Success(ExitCode):
 class Failure(ExitCode):
     """Failure exit code (defaults to 1)."""
 
-    def __init__(self, code: int = 1) -> None:
-        super().__init__(code)
+    def __new__(cls, code: int = 1) -> "Failure":
+        return int.__new__(cls, code)
 
     def success(self) -> bool:
         return False

@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-10-10
+
+### Added
+- Transparent empty path handling in `Path` routing fork to seamlessly support nested routes inside `Regex` and `Prefix`.
+- Autonomous bash runner script `pyr` discovering local or parent virtual environments without requiring manual activation.
+
+### Changed
+- `ExitCode` subclasses `int` for zero-overhead OS exit code handling in CLI entry points without losing object-oriented semantics (`success()`, `failure()`, `terminate()`).
+- Enforced 100% code-free constructors in response decorators `Cached` and `Hsts`, deferring header generation to `head()`.
+
+### Removed
+- Redundant CLI pseudo-package directory `pyr/`.
+
 ## [0.5.0] - 2026-10-10
 
 ### Added

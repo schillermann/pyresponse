@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -e
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -f "$DIR/.venv/bin/pyr" ]; then
+    VENV_PYR="$DIR/.venv/bin/pyr"
+elif [ -f "$DIR/../.venv/bin/pyr" ]; then
+    VENV_PYR="$DIR/../.venv/bin/pyr"
+elif [ -f "$PWD/.venv/bin/pyr" ]; then
+    VENV_PYR="$PWD/.venv/bin/pyr"
+elif [ -f "$PWD/../.venv/bin/pyr" ]; then
+    VENV_PYR="$PWD/../.venv/bin/pyr"
+else
+    echo "❌ Fehler: .venv/bin/pyr nicht gefunden." >&2
+    exit 1
+fi
+
+exec "$VENV_PYR" "$@"

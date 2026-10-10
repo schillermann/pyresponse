@@ -19,10 +19,14 @@ class Path(Fork):
 
     def routes(self, prefix: str = "") -> tuple[RouteEntry, ...]:
         """Polymorphically produce route entries for this path."""
+        if not self._path:
+            return EndpointRoutes(self._endpoint).routes(prefix)
         combined = f"{prefix.rstrip('/')}/{self._path.lstrip('/')}"
         return EndpointRoutes(self._endpoint).routes(combined)
 
     async def route(self, request: Request) -> Endpoint:
+        if not self._path:
+            return await SourceEndpoint(self._endpoint).route(request)
         path = await request.path()
         if path == self._path:
             return await SourceEndpoint(self._endpoint).route(request)

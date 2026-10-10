@@ -106,3 +106,24 @@ async def test_generic_method_fork():
         res3 = await client.delete("/")
         assert res3.status_code == 404
 
+
+@pytest.mark.asyncio
+async def test_method_fork_empty_path():
+    from pyresponse.fork import Regex
+    from pyresponse.request import PathParam
+
+    async def _handle(req):
+        val = await PathParam(req, "item_id").value()
+        return Ok(Body(f"patched {val}"))
+
+    app = Regex(
+        r"^/api/items/(?P<item_id>[^/]+)$",
+        Patch("", _handle),
+    )
+
+    server = Server(app)
+    async with AsyncClient(transport=ASGITransport(app=server), base_url="http://testserver") as client:
+        res = await client.patch("/api/items/123")
+        assert res.status_code == 200
+        assert res.text == "patched 123"
+

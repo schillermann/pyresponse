@@ -145,10 +145,11 @@ from pyresponse.request import PathParams
 from pyresponse.response import Json, Ok
 
 async def user_detail(req):
-    user_id = PathParams(req).param("user_id")
+    user_id = await PathParams(req).param("user_id")
     return Ok(Json({"user_id": user_id}))
 
-route = Regex(r"^/users/(?P<user_id>\d+)$", user_detail)
+# Matches request method under Regex pattern:
+route = Regex(r"^/users/(?P<user_id>\d+)$", Get(user_detail))
 ```
 
 ---
@@ -348,7 +349,7 @@ class UserDetail(Endpoint):
     """Endpoint representing an individual user entity."""
 
     async def response(self, request: Request) -> Response:
-        user_id = PathParams(request).param("user_id")
+        user_id = await PathParams(request).param("user_id")
         return Ok(Json({"id": user_id, "name": f"User {user_id}"}))
 
 
