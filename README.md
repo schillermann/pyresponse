@@ -59,5 +59,6 @@ Most modern Python web frameworks (FastAPI, Flask, Django) heavily rely on:
 ## 📚 Documentation & Guides
 
 - [Routing & Forks Guide](docs/ROUTING.md): Composable routing with `Path`, `Get`, `Post`, `Prefix`, `Regex`, `Fork`, and `Trap`.
+- [Developer Console & CLI Guide](docs/CLI.md): Extensible pure OOP CLI architecture, route inspection (`routes`), and server runner (`serve`).
 - [Architecture & Requirements](REQUIREMENTS.md): Full architectural specifications, interface details, and compatibility guidelines.
 

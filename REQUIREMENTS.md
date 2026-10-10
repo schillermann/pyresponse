@@ -90,6 +90,14 @@
 - `Get`, `Post`, `Put`, `Delete`, `Patch`, `Options`, `Head`: Composable HTTP method-specific routing forks.
 - `Trap``Catch`: Exception trapping decorator converting domain errors to HTTP error responses.
 
+### 2.6 Developer Console & CLI (`pyresponse.cli`)
+- `CliCommand`: Protocol defining autonomous console commands (`name()`, `description()`, `matches(verb)`, `execute(args)`).
+- `ForkCli`: Composite command router dispatching verbs to matching commands without procedural branching.
+- `ServeCommand`: Command starting the development ASGI server via Uvicorn with auto-reload.
+- `RoutesCommand`: Command inspecting `Fork` router trees and rendering formatted route tables via `RoutesInspector` and `RoutesTable`.
+- `DiscoveredCommands`: Discovery decorator loading external commands registered via entry point group `pyresponse.commands`.
+- `CliApp`: Standard composite CLI runner incorporating built-in and discovered commands.
+
 
 ---
 

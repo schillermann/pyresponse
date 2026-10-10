@@ -1,6 +1,6 @@
 """pyresponse - A simple web framework in Python that respects pure OOP."""
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from pyresponse import fork, lifespan, request, response
 from pyresponse.asgi import AsgiApp
@@ -24,6 +24,19 @@ from pyresponse.fork import (
     Trap,
 )
 from pyresponse.lifespan import Fake as Fake, Lifespan
+from pyresponse.cli import (
+    CliCommand,
+    UnknownCommand,
+    ForkCli,
+    HelpCommand,
+    ServeCommand,
+    RoutesCommand,
+    RoutesInspector,
+    RoutesTable,
+    RouteEntry,
+    DiscoveredCommands,
+    CliApp,
+)
 from pyresponse.request import (
     Asgi,
     AuthNotFound,
@@ -148,6 +161,16 @@ __all__ = [
     "FieldNotFound",
     "UploadNotFound",
     "CookieNotFound",
-    "AuthNotFound",
-    "RouteNotFound",
+    # CLI
+    "CliCommand",
+    "UnknownCommand",
+    "ForkCli",
+    "HelpCommand",
+    "ServeCommand",
+    "RoutesCommand",
+    "RoutesInspector",
+    "RoutesTable",
+    "RouteEntry",
+    "DiscoveredCommands",
+    "CliApp",
 ]
