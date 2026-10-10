@@ -12,6 +12,7 @@ class Response(Protocol):
         """Return response status code and headers."""
         ...
 
-    async def body(self) -> AsyncIterator[bytes]:
+    def body(self) -> AsyncIterator[bytes]:
         """Return asynchronous stream of response body chunks."""
         ...
+

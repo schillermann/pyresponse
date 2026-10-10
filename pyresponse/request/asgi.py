@@ -1,6 +1,5 @@
-"""ASGI-based Request implementation."""
-
-from typing import Any, AsyncIterator, Callable
+from collections.abc import Callable, MutableMapping
+from typing import Any, AsyncIterator
 
 from pyresponse.request.head import Head
 from pyresponse.request.request import Request
@@ -9,7 +8,7 @@ from pyresponse.request.request import Request
 class Asgi(Request):
     """ASGI-based Request implementation."""
 
-    def __init__(self, scope: dict[str, Any], receive: Callable[..., Any]) -> None:
+    def __init__(self, scope: MutableMapping[str, Any], receive: Callable[..., Any]) -> None:
         self._scope = scope
         self._receive = receive
 

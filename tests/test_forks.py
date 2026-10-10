@@ -86,21 +86,37 @@ async def test_fallback_fork():
 
 @pytest.mark.asyncio
 async def test_fixed_endpoint():
-    from pyresponse.fork import Adapted, Fixed
+    from pyresponse.fork import ConstantEndpoint, SourceEndpoint
     from pyresponse.request import Fake as FakeRequest
 
     fixed_res = Ok(Body("fixed direct response"))
-    fixed_endpoint = Fixed(fixed_res)
+    fixed_endpoint = ConstantEndpoint(fixed_res)
     assert fixed_endpoint.matched() is True
 
     req = FakeRequest()
     res = await fixed_endpoint.response(req)
     assert res == fixed_res
 
-    # Adapted converting Response directly to Fixed
-    adapted = Adapted(fixed_res)
-    assert isinstance(adapted.value(), Fixed)
-    assert await adapted.response(req) == fixed_res
+    # SourceEndpoint adapting Response directly as an Endpoint
+    source_endpoint = SourceEndpoint(fixed_res)
+    assert source_endpoint.value().matched() is True
+    assert await source_endpoint.response(req) == fixed_res
 
 
+@pytest.mark.asyncio
+async def test_function_and_missing_endpoints():
+    from pyresponse.fork.function_endpoint import FunctionEndpoint
+    from pyresponse.fork.missing_endpoint import MissingEndpoint
+    from pyresponse.request import Fake as FakeRequest
 
+    fn = FunctionEndpoint(lambda req: Ok(Body("from func")))
+    assert fn.matched() is True
+    req = FakeRequest()
+    res = await fn.response(req)
+    chunks = [c async for c in res.body()]
+    assert b"".join(chunks) == b"from func"
+
+    missing = MissingEndpoint()
+    assert missing.matched() is False
+    with pytest.raises(Exception):
+        await missing.response(req)

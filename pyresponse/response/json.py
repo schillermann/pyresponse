@@ -1,39 +1,50 @@
-"""JSON HTTP response."""
+"""JSON HTTP response decorator."""
 
 import json
 from typing import Any, AsyncIterator
-from pyresponse.response.response import Head, Response
+
+from pyresponse.response.content_type import ContentType
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.head import Head
+from pyresponse.response.response import Response
+from pyresponse.response.statusline.statusline import StatusLine
 
 
-def _default_encoder(obj: Any) -> Any:
-    if hasattr(obj, "model_dump"):
-        return obj.model_dump(mode="json")
-    if hasattr(obj, "to_dict"):
-        return obj.to_dict()
-    if hasattr(obj, "value"):
-        return obj.value
-    return str(obj)
+class JsonPrimitive:
+    """JSON-serializable primitive representation of domain objects."""
+
+    def __call__(self, obj: Any) -> Any:
+        if hasattr(obj, "model_dump"):
+            return obj.model_dump(mode="json")
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict()
+        if hasattr(obj, "value"):
+            return obj.value
+        return str(obj)
 
 
-class Json(Response):
-    """JSON HTTP response serializing payload with UTF-8 encoding."""
+class JsonPayload(Response):
+    """Lazy JSON payload serialized to bytes only upon demand."""
 
-    def __init__(self, data: Any, status: int = 200) -> None:
+    def __init__(self, data: Any, primitive: Any = JsonPrimitive()) -> None:
         self._data = data
-        self._status = status
-
-    def _encoded(self) -> bytes:
-        return json.dumps(self._data, default=_default_encoder).encode("utf-8")
+        self._primitive = primitive
 
     async def head(self) -> Head:
-        raw = self._encoded()
-        return Head(
-            status=self._status,
-            headers=[
-                (b"content-type", b"application/json; charset=utf-8"),
-                (b"content-length", str(len(raw)).encode("latin1")),
-            ],
-        )
+        return Head(status=200, headers=[])
 
     async def body(self) -> AsyncIterator[bytes]:
-        yield self._encoded()
+        serialized = json.dumps(self._data, default=self._primitive).encode("utf-8")
+        yield serialized
+
+
+class Json(Envelope):
+    """JSON HTTP response decorator serializing payload with UTF-8 encoding."""
+
+    def __init__(self, data: Any, status: int = 200) -> None:
+        super().__init__(
+            StatusLine(
+                ContentType(JsonPayload(data), "application/json; charset=utf-8"),
+                status,
+            )
+        )

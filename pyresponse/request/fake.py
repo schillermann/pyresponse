@@ -26,9 +26,10 @@ class Fake(Request):
         self._path_params = path_params
 
     async def head(self) -> Head:
-        if hasattr(self._headers, "value"):
+        if isinstance(self._headers, Head):
             return self._headers
         return Head(self._headers)
+
 
     async def method(self) -> str:
         return self._method

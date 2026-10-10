@@ -8,8 +8,7 @@ from pyresponse import (
     ParamNotFound,
     RouteNotFound,
 )
-
-from pyresponse.fork import Unmatched
+from pyresponse.fork import MissingEndpoint
 from pyresponse.request import Body, Fake as FakeRequest, Head, Header
 
 
@@ -29,8 +28,6 @@ async def test_header_fail_fast_and_fallback():
     assert h.value_or("authorization", fallback="Bearer fallback") == "Bearer fallback"
 
 
-
-
 @pytest.mark.asyncio
 async def test_request_body_default_empty():
     body = Body()
@@ -43,8 +40,8 @@ async def test_request_body_default_empty():
 
 
 @pytest.mark.asyncio
-async def test_unmatched_endpoint_fails_fast():
-    ue = Unmatched()
+async def test_missing_endpoint_fails_fast():
+    ue = MissingEndpoint()
 
     assert ue.matched() is False
     with pytest.raises(RouteNotFound) as exc_info:
@@ -58,6 +55,33 @@ async def test_default_lifespan():
     ls = Lifespan()
     await ls.startup()
     await ls.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_lifespan_decorators():
+    from pyresponse.lifespan import ForkLifespan, WithShutdown, WithStartup
+
+    events = []
+
+    async def on_start():
+        events.append("started")
+
+    def on_stop():
+        events.append("stopped")
+
+    ls = WithShutdown(WithStartup(Lifespan(), on_start), on_stop)
+    await ls.startup()
+    assert events == ["started"]
+    await ls.shutdown()
+    assert events == ["started", "stopped"]
+
+    # Composite ForkLifespan
+    events2 = []
+    f1 = WithStartup(Lifespan(), lambda: events2.append("f1_start"))
+    f2 = WithStartup(Lifespan(), lambda: events2.append("f2_start"))
+    forked = ForkLifespan(f1, f2)
+    await forked.startup()
+    assert events2 == ["f1_start", "f2_start"]
 
 
 @pytest.mark.asyncio
@@ -117,7 +141,4 @@ async def test_domain_wrappers_and_naming():
 def test_package_version():
     import pyresponse
 
-    assert pyresponse.__version__ == "0.3.1"
-
-
-
+    assert pyresponse.__version__ == "0.4.0"

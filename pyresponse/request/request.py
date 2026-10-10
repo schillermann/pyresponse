@@ -1,6 +1,4 @@
-"""Core Request protocol."""
-
-from typing import AsyncIterator, Protocol, runtime_checkable
+from typing import AsyncIterator, Mapping, Protocol, runtime_checkable
 
 from pyresponse.request.head import Head
 
@@ -25,10 +23,11 @@ class Request(Protocol):
         """Provide raw query string."""
         ...
 
-    async def path_params(self) -> dict[str, str]:
+    async def path_params(self) -> Mapping[str, str]:
         """Provide extracted route path parameters."""
         ...
 
-    async def body(self) -> AsyncIterator[bytes]:
+
+    def body(self) -> AsyncIterator[bytes]:
         """Provide an async byte stream of the request payload."""
         ...

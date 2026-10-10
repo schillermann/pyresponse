@@ -1,9 +1,9 @@
-"""Fallback routing fork decorator."""
+"""Fallback routing fork decorator in Pure OOP."""
 
 from typing import Any, Callable
 
-from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.source_endpoint import SourceEndpoint
 from pyresponse.fork.fork import Fork
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
@@ -24,11 +24,10 @@ class Fallback(Fork):
         return True
 
     async def route(self, request: Request) -> Endpoint:
-        matched = await Adapted(self._origin).route(request)
+        matched = await SourceEndpoint(self._origin).route(request)
         if matched.matched():
             return matched
-        return await Adapted(self._fallback).route(request)
-
+        return await SourceEndpoint(self._fallback).route(request)
 
     async def response(self, request: Request) -> Response:
         matched = await self.route(request)

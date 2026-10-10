@@ -1,9 +1,11 @@
-"""Server runner for pyresponse applications."""
+"""Server runner for pyresponse applications in Pure OOP."""
 
-from typing import Any, Callable
+from collections.abc import Callable, MutableMapping
+from typing import Any
 
 from pyresponse.asgi import AsgiApp
 from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.route_entry import EndpointRoutes, RouteEntry
 from pyresponse.lifespan.lifespan import Lifespan
 from pyresponse.request.request import Request
 
@@ -25,13 +27,17 @@ class Server:
         self._lifespan = lifespan
         self._log_level = log_level
 
+    def routes(self, prefix: str = "") -> tuple[RouteEntry, ...]:
+        """Polymorphically produce route entries from the internal endpoint."""
+        return EndpointRoutes(self._endpoint).routes(prefix)
+
     def app(self) -> AsgiApp:
         """Construct the AsgiApp instance."""
         return AsgiApp(self._endpoint, self._lifespan)
 
     async def __call__(
         self,
-        scope: dict[str, Any],
+        scope: MutableMapping[str, Any],
         receive: Callable[..., Any],
         send: Callable[..., Any],
     ) -> None:
@@ -39,7 +45,7 @@ class Server:
         await self.app()(scope, receive, send)
 
     def start(self) -> None:
-        """Start the HTTP server using uvicorn."""
+        """Start the Uvicorn web server."""
         import uvicorn
 
         uvicorn.run(

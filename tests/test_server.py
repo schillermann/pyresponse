@@ -82,3 +82,48 @@ async def test_lifespan_lifecycle():
         {"type": "lifespan.startup.complete"},
         {"type": "lifespan.shutdown.complete"},
     ]
+
+
+@pytest.mark.asyncio
+async def test_asgi_decorators():
+    from pyresponse.asgi import AsgiEnvelope, AsgiHttpApp, LoggedAsgi, WithLifespan
+    from pyresponse.cli import MemoryOutput
+
+    http_app = AsgiHttpApp(lambda req: Ok(Body("raw asgi")))
+    assert len(http_app.routes()) == 1
+
+    # AsgiEnvelope
+    env = AsgiEnvelope(http_app)
+
+    # LoggedAsgi
+    mem = MemoryOutput()
+    logged = LoggedAsgi(env, output=mem)
+
+    async with AsyncClient(transport=ASGITransport(app=logged), base_url="http://testserver") as client:
+        res = await client.get("/hello-asgi")
+        assert res.status_code == 200
+        assert res.text == "raw asgi"
+
+    assert "GET /hello-asgi -> 200" in mem.stdout()
+
+    # WithLifespan
+    lifespan = Fake()
+    with_ls = WithLifespan(http_app, lifespan=lifespan)
+    events = [{"type": "lifespan.startup"}, {"type": "lifespan.shutdown"}]
+    sent = []
+
+    async def mock_ls_receive():
+        return events.pop(0)
+
+    async def mock_ls_send(msg):
+        sent.append(msg)
+
+    await with_ls(
+        {"type": "lifespan"},
+        mock_ls_receive,
+        mock_ls_send,
+    )
+    assert lifespan.started() is True
+    assert lifespan.stopped() is True
+
+

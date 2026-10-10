@@ -1,52 +1,39 @@
-"""HTTP Method routing fork."""
+"""HTTP Method routing fork in Pure OOP."""
 
-from typing import Any, Callable
-
-from pyresponse.fork.adapted import Adapted
+from typing import Any
+from pyresponse.fork.empty_fork import EmptyFork
 from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.source_endpoint import SourceEndpoint
 from pyresponse.fork.fork import Fork
-from pyresponse.fork.unmatched import Unmatched
+from pyresponse.fork.path import Path
+from pyresponse.fork.route_entry import EndpointRoutes, RouteEntry
+from pyresponse.fork.missing_endpoint import MissingEndpoint
 from pyresponse.request.request import Request
-from pyresponse.response.response import Response
-from pyresponse.response.statusline.not_found import NotFound
-from pyresponse.response.text import Text
 
 
 class Method(Fork):
-    """Route fork matching HTTP request method (and optional path)."""
+    """Route fork matching HTTP request method."""
 
-    def __init__(
-        self,
-        method_or_endpoint: str | Endpoint | Fork | Callable[..., Any],
-        endpoint: Endpoint | Fork | Callable[..., Any] | None = None,
-    ) -> None:
-        self._method_or_endpoint = method_or_endpoint
-        self._endpoint = endpoint
+    def __init__(self, method: str, origin: Any = EmptyFork()) -> None:
+        self._method = method.upper()
+        self._origin = origin
 
     def matched(self) -> bool:
         return True
 
+    def routes(self, prefix: str = "") -> tuple[RouteEntry, ...]:
+        """Polymorphically produce route entries for this HTTP method."""
+        sub_routes = EndpointRoutes(self._origin).routes(prefix)
+        return tuple(
+            RouteEntry(self._method, r.path(), r.handler())
+            for r in sub_routes
+        )
+
     async def route(self, request: Request) -> Endpoint:
+        """Route request by matching method."""
         req_method = await request.method()
-        method_name = getattr(self, "METHOD", self._method_or_endpoint if isinstance(self._method_or_endpoint, str) and self._endpoint is not None else "")
-        target_endpoint = self._endpoint if self._endpoint is not None else self._method_or_endpoint
-        path_filter = self._method_or_endpoint if self._endpoint is not None and getattr(self, "METHOD", None) is not None else ""
+        if req_method.upper() != self._method:
+            return MissingEndpoint()
 
-        if method_name and req_method.upper() != method_name.upper():
-            return Unmatched()
+        return await SourceEndpoint(self._origin).route(request)
 
-        if path_filter:
-            req_path = await request.path()
-            if req_path != path_filter:
-                return Unmatched()
-
-        return await Adapted(target_endpoint).route(request)
-
-
-
-
-    async def response(self, request: Request) -> Response:
-        matched = await self.route(request)
-        if matched.matched():
-            return await matched.response(request)
-        return NotFound(Text("Not Found"))

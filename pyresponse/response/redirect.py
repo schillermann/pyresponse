@@ -1,25 +1,13 @@
-"""HTTP Redirect response."""
+"""HTTP Redirect response decorator."""
 
-from typing import AsyncIterator
-from pyresponse.response.response import Head, Response
+from pyresponse.response.body import Body
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.location import Location
+from pyresponse.response.statusline.statusline import StatusLine
 
 
-class Redirect(Response):
-    """HTTP redirect response."""
+class Redirect(Envelope):
+    """HTTP redirect response decorator."""
 
     def __init__(self, location: str, status: int = 307) -> None:
-        self._location = location
-        self._status = status
-
-    async def head(self) -> Head:
-        return Head(
-            status=self._status,
-            headers=[
-                (b"location", self._location.encode("latin1")),
-                (b"content-length", b"0"),
-            ],
-        )
-
-    async def body(self) -> AsyncIterator[bytes]:
-        if False:
-            yield b""
+        super().__init__(StatusLine(Location(Body(b""), location), status))

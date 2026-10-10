@@ -65,3 +65,19 @@ async def test_with_cookie_and_without_cookie_response():
     del_cookie_val = del_headers_dict.get("set-cookie", "")
     assert "session_id=" in del_cookie_val
     assert "Max-Age=0" in del_cookie_val
+
+
+@pytest.mark.asyncio
+async def test_with_cookie_request_decorator():
+    from pyresponse.request import Cookies, Fake as FakeRequest, WithCookie as RequestWithCookie
+
+    base = FakeRequest()
+    with_c1 = RequestWithCookie(base, "session_id", "abc123xyz")
+    cookies1 = Cookies(with_c1)
+    assert await cookies1.cookie("session_id") == "abc123xyz"
+
+    with_c2 = RequestWithCookie(with_c1, "theme", "dark")
+    cookies2 = Cookies(with_c2)
+    assert await cookies2.cookie("session_id") == "abc123xyz"
+    assert await cookies2.cookie("theme") == "dark"
+

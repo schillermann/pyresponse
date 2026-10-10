@@ -38,8 +38,9 @@ class Cookie:
 
     def header_value(self) -> bytes:
         """Format and return the RFC-compliant Set-Cookie header bytes."""
-        cookie: SimpleCookie[str] = SimpleCookie()
+        cookie: SimpleCookie = SimpleCookie()
         cookie[self._name] = self._value
+
         morsel = cookie[self._name]
 
         if self._max_age >= 0:

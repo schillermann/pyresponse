@@ -1,4 +1,4 @@
-"""Callable endpoint adapter."""
+"""FunctionEndpoint adapter executing a callable function in Pure OOP."""
 
 import inspect
 from collections.abc import Callable as TypingCallable
@@ -9,7 +9,7 @@ from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 
 
-class Callable(Endpoint):
+class FunctionEndpoint(Endpoint):
     """Endpoint adapter executing a callable function."""
 
     def __init__(self, target: TypingCallable[[Request], Any]) -> None:
@@ -23,5 +23,4 @@ class Callable(Endpoint):
         if inspect.isawaitable(res):
             res = await res
         return res
-
 

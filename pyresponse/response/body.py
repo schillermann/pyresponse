@@ -11,6 +11,12 @@ class Body(Response):
     def __init__(self, content: Any = b"") -> None:
         self._content = content
 
+    def matched(self) -> bool:
+        return True
+
+    async def response(self, request: Any = None) -> Response:
+        return self
+
     async def head(self) -> Head:
         headers = []
         if isinstance(self._content, (str, bytes)):
@@ -20,9 +26,11 @@ class Body(Response):
 
     async def body(self) -> AsyncIterator[bytes]:
         if isinstance(self._content, str):
-            yield self._content.encode("utf-8")
+            if self._content:
+                yield self._content.encode("utf-8")
         elif isinstance(self._content, bytes):
-            yield self._content
+            if self._content:
+                yield self._content
         elif hasattr(self._content, "__aiter__"):
             async for chunk in self._content:
                 yield chunk if isinstance(chunk, bytes) else str(chunk).encode("utf-8")

@@ -2,14 +2,15 @@
 
 from typing import Any, AsyncIterator
 
+from pyresponse.response.envelope import Envelope
 from pyresponse.response.response import Head, Response
 
 
-class WithBody(Response):
+class WithBody(Envelope):
     """Response decorator attaching or replacing body payload on an origin Response."""
 
     def __init__(self, origin: Response, content: Any) -> None:
-        self._origin = origin
+        super().__init__(origin)
         self._content = content
 
     async def head(self) -> Head:

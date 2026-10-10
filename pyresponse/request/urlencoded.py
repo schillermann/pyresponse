@@ -2,19 +2,21 @@
 
 import urllib.parse
 
-
+from pyresponse.request.body_bytes import BodyBytes
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.form import Form
+from pyresponse.request.request import Request
 
 
 class UrlEncoded(Envelope):
     """Decorator parsing application/x-www-form-urlencoded request body."""
 
+    def __init__(self, origin: Request) -> None:
+        super().__init__(origin)
+        self._body = BodyBytes(origin)
+
     async def form(self) -> Form:
-        chunks = []
-        async for chunk in self._origin.body():
-            chunks.append(chunk)
-        raw = b"".join(chunks)
+        raw = await self._body.read()
         if not raw:
             return Form()
         qs = raw.decode("utf-8", errors="replace")

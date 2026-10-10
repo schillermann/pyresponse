@@ -1,21 +1,14 @@
-"""HTTP 204 No Content response."""
+"""HTTP 204 No Content response decorator."""
 
-from typing import AsyncIterator
-from pyresponse.response.response import Head, Response
+from pyresponse.response.body import Body
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.response import Response
+from pyresponse.response.statusline.statusline import StatusLine
 
 
-class NoContent(Response):
-    """HTTP 204 No Content response with zero body bytes."""
+class NoContent(Envelope):
+    """HTTP 204 No Content response decorator with zero body bytes."""
 
-    def __init__(self, status: int = 204) -> None:
-        self._status = status
-
-    async def head(self) -> Head:
-        return Head(
-            status=self._status,
-            headers=[(b"content-length", b"0")],
-        )
-
-    async def body(self) -> AsyncIterator[bytes]:
-        if False:
-            yield b""
+    def __init__(self, origin: Response = Body(b""), status: int = 204) -> None:
+        statused = StatusLine(origin, status)
+        super().__init__(statused)

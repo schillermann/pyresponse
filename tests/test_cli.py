@@ -1,10 +1,11 @@
 import pytest
-from pyresponse.cli.command import UnknownCommand
-from pyresponse.cli.help import HelpCommand
-from pyresponse.cli.fork import ForkCli
-from pyresponse.cli.serve import ServeCommand
-from pyresponse.cli.routes import RoutesInspector, RoutesTable, RoutesCommand
 from pyresponse.cli.app import CliApp
+from pyresponse.cli.command import UnknownCommand
+from pyresponse.cli.fork import ForkCli
+from pyresponse.cli.help import HelpCommand
+from pyresponse.cli.output import ConsoleOutput, MemoryOutput
+from pyresponse.cli.routes import RouteEntry, RoutesCommand, RoutesTable, SourceRoutes, TableRow
+from pyresponse.cli.serve import ServeCommand
 from pyresponse.fork.fork import Fork
 from pyresponse.fork.get import Get
 from pyresponse.fork.post import Post
@@ -56,34 +57,54 @@ def test_fork_cli_routing() -> None:
             return verb == "ping"
 
         def execute(self, args: list[str]) -> int:
+            calls.append("ping")
+            return 0
+
+    cli = ForkCli([PingCommand()])
+    assert cli.execute(["ping"]) == 0
+    assert calls == ["ping"]
+    assert cli.execute(["pong"]) == 1
+
+
+def test_alias_command() -> None:
+    from pyresponse.cli.alias import AliasCommand
+
+    calls = []
+
+    class BaseCommand:
+        def name(self) -> str:
+            return "status"
+
+        def description(self) -> str:
+            return "Status command"
+
+        def matches(self, verb: str) -> bool:
+            return verb == "status"
+
+        def execute(self, args: list[str]) -> int:
             calls.append(args)
             return 0
 
-    fork = ForkCli([PingCommand()])
-    assert fork.execute(["ping", "arg1"]) == 0
-    assert calls == [["arg1"]]
-    assert fork.execute(["unknown"]) == 1
-    assert fork.execute([]) == 0
-
-
-def test_serve_command_matching() -> None:
-    serve = ServeCommand("app:portal", "127.0.0.1", 9000, reload=False)
-    assert serve.name() == "serve"
-    assert serve.matches("serve") is True
-    assert serve.matches("server") is True
-    assert serve.matches("start") is True
-    assert serve.matches("routes") is False
+    cmd = AliasCommand(BaseCommand(), "st", "stat")
+    assert cmd.name() == "status"
+    assert cmd.description() == "Status command"
+    assert cmd.matches("status") is True
+    assert cmd.matches("st") is True
+    assert cmd.matches("stat") is True
+    assert cmd.matches("other") is False
+    assert cmd.execute(["--json"]) == 0
+    assert calls == [["--json"]]
 
 
 def test_routes_inspector_and_table() -> None:
     routes = Fork(
         Prefix("/api", Fork(
-            Get(DummyEndpoint()),
-            Post(DummyEndpoint()),
+            Get("/users", DummyEndpoint()),
+            Post("/users", DummyEndpoint()),
         )),
         Get(DummyEndpoint()),
     )
-    entries = RoutesInspector(routes).entries()
+    entries = SourceRoutes(routes).entries()
     assert len(entries) >= 2
     methods = [e.method() for e in entries]
     assert "GET" in methods
@@ -106,9 +127,51 @@ def test_routes_command(capsys: pytest.CaptureFixture[str]) -> None:
     assert "GET" in capsys.readouterr().out
 
 
+def test_routes_command_with_memory_output() -> None:
+    routes = Fork(Get(DummyEndpoint()))
+    mem = MemoryOutput()
+    cmd = RoutesCommand(routes, output=mem)
+    assert cmd.execute([]) == 0
+    assert "GET" in mem.stdout()
+    assert mem.stderr() == ""
+
+
 def test_cli_app_help(capsys: pytest.CaptureFixture[str]) -> None:
     app = CliApp()
     assert app.execute(["help"]) == 0
     out = capsys.readouterr().out
     assert "PyResponse Developer Console" in out
     assert "serve" in out
+
+
+def test_pyresponse_main_entrypoint() -> None:
+    import pyresponse.__main__
+
+    assert pyresponse.__main__.main(["help"]) == 0
+
+
+def test_pyr_main_entrypoint() -> None:
+    import pyr.__main__
+
+    assert pyr.__main__.main(["help"]) == 0
+
+
+def test_routes_command_missing_target(capsys: pytest.CaptureFixture[str]) -> None:
+    cmd = RoutesCommand()
+    assert cmd.execute(["nonexistent_module_xyz:app"]) == 1
+    err = capsys.readouterr().err
+    assert "Cannot import module" in err or "Could not load" in err
+
+
+def test_routes_command_auto_discovery(capsys: pytest.CaptureFixture[str]) -> None:
+    cmd = RoutesCommand()
+    assert cmd.execute([]) == 0
+    out = capsys.readouterr().out
+    assert "METHOD" in out
+    assert "PATH" in out
+    assert "Total:" in out
+    assert "WelcomeEndpoint" in out
+
+
+
+

@@ -29,9 +29,10 @@ async def test_trap_specific_exception():
         Get("/secure", risky_endpoint),
         {
             HeaderNotFound: lambda exc, req: BadRequest(
-                Json({"error": f"Missing header: {exc.name()}"})
+                Json({"error": f"Missing header: {exc.name() if isinstance(exc, HeaderNotFound) else str(exc)}"})
             ),
         },
+
     )
 
     server = Server(app)

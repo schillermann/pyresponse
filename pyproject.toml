@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyresponse"
-version = "0.3.1"
+version = "0.4.0"
 description = "A simple web framework in Python that respects OOP."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -42,3 +42,12 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pyresponse*", "pyr*"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+reportAbstractUsage = false

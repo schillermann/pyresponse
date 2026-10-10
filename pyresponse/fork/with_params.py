@@ -2,21 +2,18 @@
 
 from typing import Mapping
 
-from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.endpoint import Endpoint, Envelope
 from pyresponse.request.request import Request
 from pyresponse.request.with_params import WithParams as RequestWithParams
 from pyresponse.response.response import Response
 
 
-class WithParams(Endpoint):
+class WithParams(Envelope):
     """Endpoint decorator enriching the request with extracted path parameters."""
 
     def __init__(self, origin: Endpoint, params: Mapping[str, str]) -> None:
-        self._origin = origin
+        super().__init__(origin)
         self._params = params
-
-    def matched(self) -> bool:
-        return self._origin.matched()
 
     async def response(self, request: Request) -> Response:
         return await self._origin.response(RequestWithParams(request, dict(self._params)))

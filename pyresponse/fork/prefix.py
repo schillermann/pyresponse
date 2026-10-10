@@ -1,19 +1,17 @@
-"""Path prefix routing fork."""
+"""Path prefix routing fork in Pure OOP."""
 
-from typing import Any
 from collections.abc import Callable as TypingCallable
+from typing import Any
 
-from pyresponse.fork.adapted import Adapted
 from pyresponse.fork.endpoint import Endpoint
+from pyresponse.fork.source_endpoint import SourceEndpoint
 from pyresponse.fork.fork import Fork
-from pyresponse.fork.prefixed import Prefixed
+from pyresponse.fork.prefix_endpoint import PrefixEndpoint
+from pyresponse.fork.route_entry import EndpointRoutes, RouteEntry
 from pyresponse.fork.sub_path import SubPath
-from pyresponse.fork.unmatched import Unmatched
+from pyresponse.fork.missing_endpoint import MissingEndpoint
 from pyresponse.request.request import Request
 
-from pyresponse.response.response import Response
-from pyresponse.response.statusline.not_found import NotFound
-from pyresponse.response.text import Text
 
 
 class Prefix(Fork):
@@ -30,6 +28,11 @@ class Prefix(Fork):
     def matched(self) -> bool:
         return True
 
+    def routes(self, prefix: str = "") -> tuple[RouteEntry, ...]:
+        """Polymorphically produce route entries for this prefix."""
+        combined = f"{prefix.rstrip('/')}/{self._prefix.lstrip('/')}"
+        return EndpointRoutes(self._origin).routes(combined)
+
     async def route(self, request: Request) -> Endpoint:
         path = await request.path()
         prefix = self._prefix.rstrip("/")
@@ -43,18 +46,12 @@ class Prefix(Fork):
             if not sub_path.startswith("/"):
                 sub_path = f"/{sub_path}"
         else:
-            return Unmatched()
+            return MissingEndpoint()
 
         sub_req = SubPath(request, sub_path)
-        matched_endpoint = await Adapted(self._origin).route(sub_req)
+        matched_endpoint = await SourceEndpoint(self._origin).route(sub_req)
 
         if matched_endpoint.matched():
-            return Prefixed(matched_endpoint, sub_path)
-        return Unmatched()
+            return PrefixEndpoint(matched_endpoint, sub_path)
+        return MissingEndpoint()
 
-
-    async def response(self, request: Request) -> Response:
-        matched = await self.route(request)
-        if matched.matched():
-            return await matched.response(request)
-        return NotFound(Text("Not Found"))

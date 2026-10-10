@@ -1,8 +1,9 @@
 """Serve command starting ASGI server in Pure OOP."""
 
 import importlib
-import sys
 from typing import Any
+from pyresponse.cli.output import ConsoleOutput, Output
+from pyresponse.cli.target import AppTarget
 
 
 class ServeCommand:
@@ -10,15 +11,17 @@ class ServeCommand:
 
     def __init__(
         self,
-        app_target: str = "main:app",
+        app_target: str = "",
         host: str = "0.0.0.0",
         port: int = 8000,
         reload: bool = True,
+        output: Output = ConsoleOutput(),
     ) -> None:
         self._app_target = app_target
         self._host = host
         self._port = port
         self._reload = reload
+        self._output = output
 
     def name(self) -> str:
         return "serve"
@@ -30,12 +33,13 @@ class ServeCommand:
         return verb in ("serve", "server", "start")
 
     def execute(self, args: list[str]) -> int:
-        target = args[0] if args else self._app_target
-        print(f"🚀 Starting PyResponse server: '{target}' on http://{self._host}:{self._port} ...")
+        raw_target = args[0] if args else self._app_target
+        target = AppTarget(raw_target).name()
+        self._output.print(f"🚀 Starting PyResponse server: '{target}' on http://{self._host}:{self._port} ...")
         try:
             uvicorn: Any = importlib.import_module("uvicorn")
             uvicorn.run(target, host=self._host, port=self._port, reload=self._reload)
             return 0
         except ImportError:
-            print("❌ Uvicorn is required to run the server. Install via 'pip install uvicorn[standard]'.", file=sys.stderr)
+            self._output.error("❌ Uvicorn is required to run the server. Install via 'pip install uvicorn[standard]'.")
             return 1

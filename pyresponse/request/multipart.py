@@ -3,25 +3,25 @@
 import io
 from typing import Any
 
+from pyresponse.request.body_bytes import BodyBytes
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.files import Files
 from pyresponse.request.form import Form
 from pyresponse.request.head import Head
+from pyresponse.request.request import Request
 from pyresponse.request.upload_file import UploadFile
 
 
-class Multipart(Envelope):
-    """Streaming multipart / form-data parser for file uploads and form fields."""
+class MultipartPayload:
+    """Parsed multipart body separating Form fields and uploaded Files."""
 
-    async def _parse(self) -> tuple[Form, Files]:
-        chunks = []
-        async for chunk in self._origin.body():
-            chunks.append(chunk)
-        raw_body = b"".join(chunks)
+    def __init__(self, body: bytes, content_type: str) -> None:
+        self._body = body
+        self._content_type = content_type
 
-        header = await self._origin.head()
-        content_type_header = header.value_or("content-type", "")
-        if not content_type_header:
+    def form_and_files(self) -> tuple[Form, Files]:
+        """Parse raw body bytes and return Form and Files domain objects."""
+        if not self._content_type:
             return Form(), Files()
 
         fields: dict[str, list[str]] = {}
@@ -32,7 +32,7 @@ class Multipart(Envelope):
         except ImportError:
             import multipart as multipart_mod
 
-        headers = {"Content-Type": content_type_header.encode("latin1")}
+        headers = {"Content-Type": self._content_type.encode("latin1")}
 
         def on_field(field_obj: Any) -> None:
             name = (
@@ -88,21 +88,38 @@ class Multipart(Envelope):
 
         multipart_mod.parse_form(
             headers=headers,
-            input_stream=io.BytesIO(raw_body),
+            input_stream=io.BytesIO(self._body),
             on_field=on_field,
             on_file=on_file,
         )
 
         return Form(fields=fields), Files(files=files)
 
+
+class Multipart(Envelope):
+    """Streaming multipart / form-data parser for file uploads and form fields."""
+
+    def __init__(self, origin: Request) -> None:
+        super().__init__(origin)
+        self._body = BodyBytes(origin)
+
+    async def payload(self) -> MultipartPayload:
+        """Read and construct the MultipartPayload domain object."""
+        raw_body = await self._body.read()
+        header = await self._origin.head()
+        content_type_header = header.value_or("content-type", "")
+        return MultipartPayload(raw_body, content_type_header)
+
     async def form(self) -> Form:
         """Parse request body and return Form domain object for text parameters."""
-        form, _ = await self._parse()
+        p = await self.payload()
+        form, _ = p.form_and_files()
         return form
 
     async def files(self) -> Files:
         """Parse request body and return Files domain object for uploaded files."""
-        _, files = await self._parse()
+        p = await self.payload()
+        _, files = p.form_and_files()
         return files
 
     async def field(self, name: str) -> str:

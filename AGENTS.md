@@ -66,6 +66,10 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
    - Avoid global mutable state, singleton app containers, and `@staticmethod``@classmethod` utility dumps.
    - Explicitly construct and compose dependencies at the composition root.
 
+7. **File Length Limit (Max 200 Lines)**:
+   - Code files must strictly not exceed 200 lines.
+   - Keep classes and modules small, focused, and cohesive. Extract separate cohesive domain objects or split test modules whenever a file approaches or exceeds 200 lines.
+
 ---
 
 ## 3. Technology Stack & Standards

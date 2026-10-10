@@ -15,6 +15,26 @@ class CliCommand(Protocol):
     def execute(self, args: list[str]) -> int: ...
 
 
+class CommandEnvelope(CliCommand):
+    """Base class for CLI command decorators implementing the envelope pattern."""
+
+    def __init__(self, origin: CliCommand) -> None:
+        self._origin = origin
+
+    def name(self) -> str:
+        return self._origin.name()
+
+    def description(self) -> str:
+        return self._origin.description()
+
+    def matches(self, verb: str) -> bool:
+        return self._origin.matches(verb)
+
+    def execute(self, args: list[str]) -> int:
+        return self._origin.execute(args)
+
+
+
 class UnknownCommand:
     """Null object fallback for unrecognized CLI verbs."""
 

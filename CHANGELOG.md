@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-10-10
+
+### Added
+- Pure OOP Elegant Objects refactoring across entire codebase without regard for legacy constraints.
+- 100% code-free constructors across all domain models and envelopes.
+- Real domain null-objects and envelopes eliminating all `None` values and `None`-checks (`EmptyFork`, `MissingEndpoint`).
+- Strict 200-line file length limit enforced repository-wide; extracted cohesive domain objects for CLI targets (`Coordinate`, `Directory`, `Candidate`, `Target`, `ExplicitTarget`, `InPathTarget`).
+- Comprehensive HTTP response decorators: `Ok`, `Created`, `NoContent`, `BadRequest`, `NotFound`, `ServerError`, `StatusLine`, `Body`, `BytesBody`, `TextBody`, `StreamBody`, `Sse`, `Event`, `SseEvent`, `Secure`, `NoSniff`, `FrameOptions`, `Hsts`, `Cors`, `Cookie`, `WithCookie`, `WithoutCookie`, `Cached`, `NoCache`, `Etag`, `Gzip`, `Chunked`, `Attachment`, `Inline`, `Redirect`, `Location`, `RetryAfter`, `ServerTiming`.
+- Comprehensive HTTP request inspectors and decorators: `Method`, `Path`, `QueryParams`, `PathParams`, `Cookies`, `Header`, `Host`, `UserAgent`, `Accept`, `ContentType`, `Authorization`, `BearerToken`, `BasicAuth`, `BodyBytes`, `Json`, `Urlencoded`, `Multipart`, `Fake`, and immutable `With*` request transformers.
+- Advanced routing forks: `Route`, `Host` (virtual hosting), `HeaderFork` (header-based routing and API versioning), `GuardedEndpoint`, `GuardedBranch`, `MeasuredEndpoint`, `LoggedFork`.
+- ASGI lifespan management objects: `Lifespan`, `Envelope`, `ForkLifespan`, `WithStartup`, `WithShutdown`.
+- Extensive developer guides in `docs/RESPONSES.md`, `docs/REQUESTS.md`, and updated `docs/ROUTING.md`, `README.md`, `REQUIREMENTS.md`.
+
+### Changed
+- Standardized response class naming to PascalCase (e.g. `Ok` instead of procedural `OK`).
+- Removed all private helper functions, methods, and classes (`_...`).
+
 ## [0.3.1] - 2026-10-10
 
 ### Changed

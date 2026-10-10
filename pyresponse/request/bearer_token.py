@@ -1,6 +1,7 @@
 """Bearer token authentication extractor."""
 
 from pyresponse.request.auth_not_found import AuthNotFound
+from pyresponse.request.authorization import Authorization
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.request import Request
 
@@ -8,10 +9,13 @@ from pyresponse.request.request import Request
 class BearerToken(Envelope):
     """Decorator extracting Bearer authentication token from Authorization header."""
 
+    def __init__(self, origin: Request) -> None:
+        super().__init__(origin)
+        self._auth = Authorization(origin)
+
     async def token(self) -> str:
         """Extract and return Bearer token or fail fast with AuthNotFound."""
-        head = await self._origin.head()
-        raw_auth = head.value_or("authorization", "").strip()
+        raw_auth = (await self._auth.value_or("")).strip()
         if not raw_auth:
             raise AuthNotFound("Bearer")
         parts = raw_auth.split(" ", 1)

@@ -2,6 +2,7 @@
 
 import base64
 from pyresponse.request.auth_not_found import AuthNotFound
+from pyresponse.request.authorization import Authorization
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.request import Request
 
@@ -9,10 +10,13 @@ from pyresponse.request.request import Request
 class BasicAuth(Envelope):
     """Decorator extracting Basic authentication username and password from Authorization header."""
 
+    def __init__(self, origin: Request) -> None:
+        super().__init__(origin)
+        self._auth = Authorization(origin)
+
     async def credentials(self) -> tuple[str, str]:
         """Extract and return (username, password) tuple or fail fast with AuthNotFound."""
-        head = await self._origin.head()
-        raw_auth = head.value_or("authorization", "").strip()
+        raw_auth = (await self._auth.value_or("")).strip()
         if not raw_auth:
             raise AuthNotFound("Basic")
         parts = raw_auth.split(" ", 1)

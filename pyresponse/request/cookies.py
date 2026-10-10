@@ -5,20 +5,25 @@ from typing import Mapping
 
 from pyresponse.request.cookie_not_found import CookieNotFound
 from pyresponse.request.envelope import Envelope
+from pyresponse.request.header import Header
 from pyresponse.request.request import Request
 
 
 class Cookies(Envelope):
     """Request envelope extracting HTTP Cookies from the Cookie header."""
 
+    def __init__(self, origin: Request) -> None:
+        super().__init__(origin)
+        self._header = Header(origin, "cookie")
+
     async def cookies(self) -> Mapping[str, str]:
         """Parse and return all cookies present in the request."""
-        head = await self._origin.head()
-        raw_cookie = head.value_or("cookie", "")
+        raw_cookie = await self._header.value_or("")
         if not raw_cookie:
             return {}
-        simple_cookie: SimpleCookie[str] = SimpleCookie()
+        simple_cookie: SimpleCookie = SimpleCookie()
         simple_cookie.load(raw_cookie)
+
         return {k: v.value for k, v in simple_cookie.items()}
 
     async def cookie(self, name: str) -> str:

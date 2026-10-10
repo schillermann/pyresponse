@@ -9,7 +9,7 @@ class WithParams(Envelope):
     """Decorator that attaches route path parameters to the Request."""
 
     def __init__(self, origin: Request, params: dict[str, str]) -> None:
-        self._origin = origin
+        super().__init__(origin)
         self._params = params
 
     async def path_params(self) -> dict[str, str]:

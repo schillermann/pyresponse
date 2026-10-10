@@ -1,17 +1,16 @@
-"""CORS routing fork with automatic preflight OPTIONS handling."""
+"""CORS routing fork with automatic preflight OPTIONS handling in Pure OOP."""
 
 from collections.abc import Callable as TypingCallable
 from typing import Any, Sequence
 
-from pyresponse.fork.adapted import Adapted
-from pyresponse.fork.corsed import Corsed
+from pyresponse.fork.constant_endpoint import ConstantEndpoint
+from pyresponse.fork.cors_endpoint import CorsEndpoint
 from pyresponse.fork.endpoint import Endpoint
-from pyresponse.fork.fixed import Fixed
+from pyresponse.fork.source_endpoint import SourceEndpoint
 from pyresponse.fork.fork import Fork
 from pyresponse.request.request import Request
 from pyresponse.response.cors import Cors as CorsResponse
 from pyresponse.response.no_content import NoContent
-from pyresponse.response.response import Response
 
 
 class Cors(Fork):
@@ -47,12 +46,12 @@ class Cors(Fork):
                 allow_credentials=self._allow_credentials,
                 max_age=self._max_age,
             )
-            return Fixed(preflight)
+            return ConstantEndpoint(preflight)
 
-        endpoint = await Adapted(self._origin).route(request)
+        endpoint = await SourceEndpoint(self._origin).route(request)
 
         if endpoint.matched():
-            return Corsed(
+            return CorsEndpoint(
                 endpoint,
                 self._allow_origin,
                 self._allow_methods,
@@ -60,9 +59,5 @@ class Cors(Fork):
                 self._allow_credentials,
                 self._max_age,
             )
+
         return endpoint
-
-
-    async def response(self, request: Request) -> Response:
-        endpoint = await self.route(request)
-        return await endpoint.response(request)

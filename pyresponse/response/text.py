@@ -1,25 +1,13 @@
-"""Plain text HTTP response."""
+"""Plain text HTTP response decorator."""
 
-from typing import AsyncIterator
-from pyresponse.response.response import Head, Response
+from pyresponse.response.content_type import ContentType
+from pyresponse.response.envelope import Envelope
+from pyresponse.response.statusline.statusline import StatusLine
+from pyresponse.response.text_body import TextBody
 
 
-class Text(Response):
-    """Plain text HTTP response with UTF-8 encoding."""
+class Text(Envelope):
+    """Plain text HTTP response decorator with UTF-8 encoding."""
 
-    def __init__(self, text: str, status: int = 200) -> None:
-        self._text = text
-        self._status = status
-
-    async def head(self) -> Head:
-        encoded = self._text.encode("utf-8")
-        return Head(
-            status=self._status,
-            headers=[
-                (b"content-type", b"text/plain; charset=utf-8"),
-                (b"content-length", str(len(encoded)).encode("latin1")),
-            ],
-        )
-
-    async def body(self) -> AsyncIterator[bytes]:
-        yield self._text.encode("utf-8")
+    def __init__(self, text: str = "", status: int = 200) -> None:
+        super().__init__(StatusLine(ContentType(TextBody(text), "text/plain; charset=utf-8"), status))

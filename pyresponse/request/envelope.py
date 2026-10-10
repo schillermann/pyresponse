@@ -1,6 +1,6 @@
 """Base request envelope decorator."""
 
-from typing import Any, AsyncIterator
+from typing import Any, AsyncIterator, Mapping
 
 from pyresponse.request.head import Head
 from pyresponse.request.request import Request
@@ -24,8 +24,9 @@ class Envelope(Request):
     async def query_string(self) -> bytes:
         return await self._origin.query_string()
 
-    async def path_params(self) -> dict[str, str]:
+    async def path_params(self) -> Mapping[str, str]:
         return await self._origin.path_params()
+
 
     async def body(self) -> AsyncIterator[bytes]:
         async for chunk in self._origin.body():

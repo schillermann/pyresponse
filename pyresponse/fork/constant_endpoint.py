@@ -1,12 +1,12 @@
-"""Fixed response endpoint."""
+"""Constant response endpoint in Pure OOP."""
 
 from pyresponse.fork.endpoint import Endpoint
 from pyresponse.request.request import Request
 from pyresponse.response.response import Response
 
 
-class Fixed(Endpoint):
-    """Endpoint that always responds with a predetermined fixed response."""
+class ConstantEndpoint(Endpoint):
+    """Endpoint that always responds with a predetermined constant response."""
 
     def __init__(self, response: Response) -> None:
         self._response = response
@@ -16,3 +16,4 @@ class Fixed(Endpoint):
 
     async def response(self, request: Request) -> Response:
         return self._response
+

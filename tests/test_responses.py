@@ -113,9 +113,12 @@ async def test_response_binary():
 
 @pytest.mark.asyncio
 async def test_response_sse():
+    from pyresponse.response import Event
+
     async def event_generator():
         yield "token1"
         yield {"event": "delta", "data": {"text": "token2"}}
+        yield Event(data={"text": "token3"}, event="done", id="msg-1")
 
     res = Sse(event_generator())
     head = await res.head()
@@ -127,6 +130,7 @@ async def test_response_sse():
     full_output = b"".join(chunks).decode("utf-8")
     assert "data: token1\n\n" in full_output
     assert 'event: delta\ndata: {"text": "token2"}\n\n' in full_output
+    assert 'event: done\nid: msg-1\ndata: {"text": "token3"}\n\n' in full_output
 
 
 @pytest.mark.asyncio
@@ -155,4 +159,32 @@ async def test_response_with_body():
     assert head.status() == 200
     chunks = [c async for c in decorated.body()]
     assert b"".join(chunks) == b"overridden text"
+
+
+@pytest.mark.asyncio
+async def test_response_nocache():
+    from pyresponse.response import NoCache
+
+    res = NoCache(Ok(Text("fresh data")))
+    head = await res.head()
+    headers_dict = {k.decode("latin1").lower(): v.decode("latin1") for k, v in head.headers()}
+    assert headers_dict.get("cache-control") == "no-cache"
+
+
+def test_json_primitive():
+    from pyresponse.response import JsonPrimitive
+
+    primitive = JsonPrimitive()
+
+    class CustomDomainObject:
+        def to_dict(self):
+            return {"key": "val"}
+
+    assert primitive(CustomDomainObject()) == {"key": "val"}
+
+    class ValueObject:
+        def __init__(self, v):
+            self.value = v
+
+    assert primitive(ValueObject("wrapped")) == "wrapped"
 

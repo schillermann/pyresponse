@@ -1,15 +1,14 @@
-"""Single Request Header inspection decorator."""
+"""Single Request Header inspection decorator in Pure OOP."""
 
 from pyresponse.request.envelope import Envelope
 from pyresponse.request.request import Request
 
 
 class Header(Envelope):
-
     """Decorator inspecting a specific named HTTP header in a Request."""
 
     def __init__(self, origin: Request, name: str) -> None:
-        self._origin = origin
+        super().__init__(origin)
         self._name = name
 
     async def value(self, default: str = "") -> str:
@@ -24,12 +23,7 @@ class Header(Envelope):
         headers = await self._origin.head()
         return headers.value_or(self._name, fallback)
 
-    async def as_string(self, default: str = "") -> str:
-        """Backwards compatibility alias for value()."""
-        return await self.value(default)
-
     async def has(self) -> bool:
         """Check if header is present in the request."""
         headers = await self._origin.head()
         return headers.has(self._name)
-
