@@ -10,11 +10,12 @@ class WithoutHeader(Envelope):
 
     def __init__(self, origin: Response, name: str) -> None:
         super().__init__(origin)
-        self._name = name.lower().encode("latin1")
+        self._name = name
 
     async def head(self) -> Head:
         origin_head = await self._origin.head()
+        target = self._name.lower().encode("latin1")
         filtered = [
-            (k, v) for k, v in origin_head.headers() if k.lower() != self._name
+            (k, v) for k, v in origin_head.headers() if k.lower() != target
         ]
         return Head(status=origin_head.status(), headers=filtered)

@@ -1,6 +1,6 @@
 """pyresponse - A simple web framework in Python that respects pure OOP."""
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 from pyresponse import fork, lifespan, request, response
 from pyresponse.asgi import AsgiApp
@@ -23,15 +23,20 @@ from pyresponse.lifespan import (
 from pyresponse.request import (
     Asgi, AuthNotFound, Authorization, BasicAuth, BearerToken, Cookie,
     CookieNotFound, Cookies, Envelope as Envelope, FieldNotFound, Files, Form,
-    Head as RequestHead, Header, HeaderNotFound, Multipart, ParamNotFound,
-    Path as RequestPath, PathParam, PathParams, QueryParam, QueryParams,
-    Request, RequestForm, Sticky, UploadFile, UploadNotFound, UrlEncoded,
-    WithHeader, WithMethod, WithPath, WithQuery,
+    FormField, FormFile, Head as RequestHead, Header, HeaderNotFound,
+    Multipart, MultipartPart, ParamNotFound, Path as RequestPath, PathParam,
+    PathParams, QueryParam, QueryParams, Request, RequestForm, Sticky,
+    UploadFile, UploadNotFound, UrlEncoded, WithBearerToken, WithHeader,
+    WithJsonBody, WithMethod, WithMultipartBody, WithPath, WithQuery,
 )
 from pyresponse.response import (
-    BadRequest, Binary, Body, BytesBody, Created, Json, NoCache, NoContent,
-    NotFound, Ok, Redirect, Response, ServerError, Sse, StatusLine, StreamBody,
-    Text, TextBody, WithBody, WithCookie, WithoutCookie,
+    Asgi as AsgiResponse, AsgiExchange, AsgiInput, AsgiNotStarted, AsgiOutput,
+    AsgiScope, BadRequest, Binary, Body, BodyBytes as ResponseBodyBytes,
+    BodyJson, BodyText, BytesBody, Created, ExpectedBody, ExpectedHeader,
+    ExpectedJson, ExpectedStatus, Json, NoCache, NoContent, NotFound, Ok,
+    Redirect, Response, ResponseAssertion, ServerError, Sse, StatusLine,
+    Sticky as ResponseSticky, StreamBody, Text, TextBody, Verified, WithBody,
+    WithCookie, WithoutCookie,
 )
 from pyresponse.server import Server
 
@@ -50,14 +55,18 @@ __all__ = [
     # Request Objects
     "Envelope", "Header", "RequestHead", "RequestPath", "Asgi", "Cookies",
     "Cookie", "QueryParams", "QueryParam", "PathParams", "PathParam",
-    "WithHeader", "WithQuery", "WithMethod", "WithPath", "Form", "Files",
-    "UploadFile", "Multipart", "UrlEncoded", "Authorization", "BearerToken",
-    "BasicAuth", "Sticky", "RequestForm",
+    "WithHeader", "WithQuery", "WithMethod", "WithPath", "WithJsonBody",
+    "WithBearerToken", "WithMultipartBody", "MultipartPart", "FormField",
+    "FormFile", "Form", "Files", "UploadFile", "Multipart", "UrlEncoded",
+    "Authorization", "BearerToken", "BasicAuth", "Sticky", "RequestForm",
     # Response Objects
     "StatusLine", "Ok", "NotFound", "BadRequest", "ServerError", "Created",
     "NoContent", "Json", "Text", "Binary", "Sse", "Redirect", "WithCookie",
     "WithoutCookie", "Body", "BytesBody", "StreamBody", "TextBody", "WithBody",
-    "NoCache",
+    "NoCache", "AsgiResponse", "AsgiExchange", "AsgiInput", "AsgiNotStarted",
+    "AsgiOutput", "AsgiScope", "ResponseSticky", "ResponseBodyBytes",
+    "BodyText", "BodyJson", "ResponseAssertion", "Verified", "ExpectedStatus",
+    "ExpectedHeader", "ExpectedBody", "ExpectedJson",
     # Errors
     "HeaderNotFound", "ParamNotFound", "CookieNotFound", "AuthNotFound",
     "FieldNotFound", "UploadNotFound",

@@ -160,11 +160,14 @@ Wrap requests with modified attributes without modifying original request instan
 ```python
 from pyresponse.request import (
     Fake,
+    FormField,
+    FormFile,
     WithAccept,
     WithBearerToken,
     WithCookie,
     WithHeader,
     WithJsonBody,
+    WithMultipartBody,
     WithoutHeader,
     WithoutQueryParam,
     WithQueryParam,
@@ -179,6 +182,15 @@ req = WithHeader(req, "X-Client", "MobileApp")
 req = WithQueryParam(req, "sort", "asc")
 req = WithCookie(req, "theme", "dark")
 req = WithJsonBody(req, {"action": "refresh"})
+
+# Or construct a multipart/form-data request with fields and files
+upload_req = WithMultipartBody(
+    Fake(method="POST", path="/api/documents/upload"),
+    [
+        FormFile("file", "report.pdf", b"%PDF-1.4 ...", "application/pdf"),
+        FormField("category", "report"),
+    ],
+)
 
 # Remove attributes
 req = WithoutHeader(req, "X-Client")

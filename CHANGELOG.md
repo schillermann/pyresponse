@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-10-28
+
+### Added
+- In-memory ASGI 3.0 response execution (`response.Asgi`, `AsgiExchange`, `AsgiScope`, `AsgiInput`, `AsgiOutput`, `AsgiNotStarted`) and response memoization decorator (`response.Sticky`).
+- Composable RFC 7578 multipart request builders (`MultipartPart`, `FormField`, `FormFile`, `WithMultipartBody`).
+- Single-responsibility response body inspectors (`BodyBytes`, `BodyText`, `BodyJson`).
+- Declarative fail-fast response verification objects (`ResponseAssertion`, `Verified`, `ExpectedStatus`, `ExpectedHeader`, `ExpectedBody`, `ExpectedJson`).
+
+### Changed
+- Enforced 100% code-free constructors across request and response decorators (`WithJsonBody`, `WithBasicAuth`, `WithHeader`, `WithoutHeader`, `WithMethod`, `WithPath`).
+
 ## [0.5.1] - 2026-10-10
 
 ### Added

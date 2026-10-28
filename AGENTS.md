@@ -32,7 +32,7 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
        - `pyresponse/__init__.py` (`__version__ = "..."`)
        - `tests/test_domain_objects.py` (`assert pyresponse.__version__ == "..."`)
        - `CHANGELOG.md` (add `## [x.y.z] - YYYY-MM-DD`)
-    5. **Generate Commit Message**: Propose or generate the Conventional Commit message reflecting the staged changes.
+    5. **Generate Commit Message & Tag Command**: Propose or generate the Conventional Commit message reflecting the staged/modified changes along with the corresponding `git tag v<MAJOR.MINOR.PATCH>` command for tagging the release commit.
 
 ---
 
@@ -58,17 +58,18 @@ Guidelines, architectural rules, and conventions for AI agents operating in the 
    - Use real domain entities (`NoContent`, `Body()`, `Lifespan()`) or fail fast with meaningful domain exceptions (`HeaderNotFound`, `RouteNotFound`, `ParamNotFound`).
    - Use fallback decorators or explicit defaults for optional values rather than dummy null objects.
 
-5. **No GettersSettersAnemic DTOs**:
-   - Do not create anemic data structures with getter/setter methods.
-   - Encapsulate data and behavior together within cohesive domain objects.
+5. **No Getters / Setters / Anemic DTOs & Strict EO Naming**:
+   - Do not create anemic data structures with getter/setter methods; never use `get_`, `set_`, `is_`, or `has_` prefixes.
+   - Class names must be nouns describing *what the object is* (never verbs, never `-er`/`-or` suffixes, and no `Base`/`Default`/`Generic`/`Null`).
+   - Builder methods (returning a value) must be nouns or adjectives; Manipulator methods (`-> None`) must be verbs.
 
-6. **No Static Methods & No Global Singletons**:
-   - Avoid global mutable state, singleton app containers, and `@staticmethod``@classmethod` utility dumps.
+6. **No Static Methods, No Private Helper Methods & No Global Singletons**:
+   - Avoid global mutable state, singleton app containers, `@staticmethod`/`@classmethod` utility dumps, and private helper methods (`_foo()`). Extract helper logic into small, cohesive domain classes.
    - Explicitly construct and compose dependencies at the composition root.
 
-7. **File Length Limit (Max 200 Lines)**:
+7. **File & Class Size Limits (Max 200 Lines, Max 4 Attributes, < 5 Public Methods)**:
    - Code files must strictly not exceed 200 lines.
-   - Keep classes and modules small, focused, and cohesive. Extract separate cohesive domain objects or split test modules whenever a file approaches or exceeds 200 lines.
+   - Classes must have at most 4 attributes and fewer than 5 public methods. Extract separate cohesive domain objects or split test modules whenever a file or class approaches these limits.
 
 ---
 

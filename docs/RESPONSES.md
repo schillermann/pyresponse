@@ -262,26 +262,57 @@ redirect_perm = Redirect("/new-url", status_code=308)
 
 ---
 
-## 10. Unit Testing Responses (Zero Network Overhead)
+## 10. Unit Testing Responses & In-Memory ASGI (Zero Network Overhead)
 
-Because responses are pure domain objects, you can inspect their status code, headers, and body directly in standard unit tests without starting any server or mocking ASGI lifecycles:
+Because responses and ASGI applications are pure domain objects, you can inspect and verify their status code, headers, and body directly in memory without starting any server or relying on `starlette.testclient.TestClient`:
 
 ```python
 import pytest
-from pyresponse.response import Json, Ok
+from pyresponse import AsgiApp, Post, request
+from pyresponse.request import WithBearerToken, WithJsonBody
+from pyresponse.response import (
+    Asgi as AsgiResponse,
+    BodyBytes,
+    BodyJson,
+    BodyText,
+    ExpectedBody,
+    ExpectedHeader,
+    ExpectedJson,
+    ExpectedStatus,
+    Json,
+    Ok,
+    Verified,
+)
 
 @pytest.mark.asyncio
-async def test_endpoint_response():
-    response = Ok(Json({"status": "ok"}))
+async def test_in_memory_asgi_and_assertions():
+    app = AsgiApp(
+        Post("/api/chat", lambda req: Ok(Json({"status": "ok", "context_id": "ctx-123"})))
+    )
 
-    # Inspect status
-    assert response.head().status() == 200
+    res = AsgiResponse(
+        app,
+        WithBearerToken(
+            WithJsonBody(
+                request.Fake(method="POST", path="/api/chat"),
+                {"prompt": "Hello"},
+            ),
+            "token-123",
+        ),
+    )
 
-    # Inspect headers
-    headers = dict(response.head().headers())
-    assert headers["content-type"] == "application/json"
+    # 1. Inspect via focused response body inspectors:
+    assert (await res.head()).status() == 200
+    assert await BodyBytes(res).bytes() == b'{"status": "ok", "context_id": "ctx-123"}'
+    assert "ctx-123" in await BodyText(res).text()
+    assert (await BodyJson(res).value())["context_id"] == "ctx-123"
 
-    # Inspect body bytes
-    chunks = [chunk async for chunk in response.body()]
-    assert b"".join(chunks) == b'{"status": "ok"}'
+    # 2. Or verify declaratively (Tell, Don't Ask):
+    await Verified(
+        res,
+        ExpectedStatus(200),
+        ExpectedHeader("content-type", "application/json"),
+        ExpectedBody("ctx-123"),
+        ExpectedJson(("context_id",), "ctx-123"),
+    ).verify()
 ```

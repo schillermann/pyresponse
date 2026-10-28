@@ -78,9 +78,13 @@
 - `Json`: Async payload reader deserializing JSON into domain entities.
 - `Urlencoded`: Async parser for `application/x-www-form-urlencoded` forms.
 - `Multipart`: Streaming multipart parser for file uploads (PDF, audio, documents).
-- Request mutation envelopes: `WithMethod`, `WithPath`, `WithHeader`, `WithoutHeader`, `WithQuery`, `WithQueryParam`, `WithoutQueryParam`, `WithCookie`, `WithBody`, `WithJsonBody`, `WithBearerToken`, `WithBasicAuth`, `WithUserAgent`, `WithAccept`, `WithParams`.
+- Request mutation envelopes: `WithMethod`, `WithPath`, `WithHeader`, `WithoutHeader`, `WithQuery`, `WithQueryParam`, `WithoutQueryParam`, `WithCookie`, `WithBody`, `WithJsonBody`, `WithMultipartBody` (`MultipartPart`, `FormField`, `FormFile`), `WithBearerToken`, `WithBasicAuth`, `WithUserAgent`, `WithAccept`, `WithParams`.
 
-### 2.4 Response Decorators
+### 2.4 Response Decorators, In-Memory ASGI & Assertions
+- `Asgi(app, request)` (`AsgiExchange`, `AsgiScope`, `AsgiInput`, `AsgiOutput`, `AsgiNotStarted`): In-memory ASGI 3.0 response adapter executing any `AsgiCallable` against a `Request` without a network server.
+- `Sticky(response)`: Memoizing response decorator caching `head()` and `body()` chunks for repeatable reading.
+- `BodyBytes(response)`, `BodyText(response)`, `BodyJson(response)`: Focused single-responsibility response body inspectors.
+- `Verified(response, *assertions)`, `ResponseAssertion`, `ExpectedStatus`, `ExpectedHeader`, `ExpectedBody`, `ExpectedJson`: Declarative fail-fast response verification objects.
 - `StatusLine(response, status_code)`: Wraps status code (200, 201, 400, 401, 403, 404, 500, etc.).
 - `Ok`, `Created`, `NoContent`, `BadRequest`, `NotFound`, `ServerError`: Dedicated status code wrappers.
 - `Header(response, key, value)`: Attaches HTTP headers.

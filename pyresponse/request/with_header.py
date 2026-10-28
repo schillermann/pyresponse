@@ -10,14 +10,15 @@ class WithHeader(Envelope):
 
     def __init__(self, origin: Request, name: str, value: str) -> None:
         super().__init__(origin)
-        self._name = name.lower()
+        self._name = name
         self._value = value
 
     async def head(self) -> Head:
         origin_head = await self._origin.head()
         raw_headers = list(origin_head.headers())
+        target = self._name.lower().encode("latin1")
         filtered = [
-            (k, v) for k, v in raw_headers if k.lower() != self._name.encode("latin1")
+            (k, v) for k, v in raw_headers if k.lower() != target
         ]
-        filtered.append((self._name.encode("latin1"), self._value.encode("latin1")))
+        filtered.append((target, self._value.encode("latin1")))
         return Head(filtered)

@@ -9,7 +9,7 @@ class WithMethod(Envelope):
 
     def __init__(self, origin: Request, method: str) -> None:
         super().__init__(origin)
-        self._method = method.upper()
+        self._method = method
 
     async def method(self) -> str:
-        return self._method
+        return self._method.upper()

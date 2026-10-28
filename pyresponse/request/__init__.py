@@ -17,6 +17,8 @@ from pyresponse.request.fake import Fake
 from pyresponse.request.field_not_found import FieldNotFound
 from pyresponse.request.files import Files
 from pyresponse.request.form import Form
+from pyresponse.request.form_field import FormField
+from pyresponse.request.form_file import FormFile
 from pyresponse.request.head import Head
 from pyresponse.request.header import Header
 from pyresponse.request.header_not_found import HeaderNotFound
@@ -24,6 +26,7 @@ from pyresponse.request.host import Host
 from pyresponse.request.json import Json
 from pyresponse.request.method import Method
 from pyresponse.request.multipart import Multipart, MultipartPayload
+from pyresponse.request.multipart_part import MultipartPart
 from pyresponse.request.param_not_found import ParamNotFound
 from pyresponse.request.path import Path
 from pyresponse.request.path_param import PathParam
@@ -37,7 +40,6 @@ from pyresponse.request.upload_file import UploadFile
 from pyresponse.request.upload_not_found import UploadNotFound
 from pyresponse.request.urlencoded import UrlEncoded
 from pyresponse.request.user_agent import UserAgent
-
 from pyresponse.request.with_accept import WithAccept
 from pyresponse.request.with_basic_auth import WithBasicAuth
 from pyresponse.request.with_bearer_token import WithBearerToken
@@ -46,6 +48,7 @@ from pyresponse.request.with_cookie import WithCookie
 from pyresponse.request.with_header import WithHeader
 from pyresponse.request.with_json_body import WithJsonBody
 from pyresponse.request.with_method import WithMethod
+from pyresponse.request.with_multipart_body import WithMultipartBody
 from pyresponse.request.with_params import WithParams
 from pyresponse.request.with_path import WithPath
 from pyresponse.request.with_query import WithQuery
@@ -53,9 +56,6 @@ from pyresponse.request.with_query_param import WithQueryParam
 from pyresponse.request.with_user_agent import WithUserAgent
 from pyresponse.request.without_header import WithoutHeader
 from pyresponse.request.without_query_param import WithoutQueryParam
-
-
-
 
 __all__ = [
     # Core Interfaces & Envelopes
@@ -81,9 +81,12 @@ __all__ = [
     "WithoutQueryParam",
     "WithMethod",
     "WithPath",
-
     "WithBody",
     "WithJsonBody",
+    "WithMultipartBody",
+    "MultipartPart",
+    "FormField",
+    "FormFile",
     "WithBearerToken",
     "WithBasicAuth",
     "WithCookie",
@@ -98,7 +101,6 @@ __all__ = [
     "ContentType",
     "Host",
     "Authorization",
-
     "Json",
     "Multipart",
     "MultipartPayload",

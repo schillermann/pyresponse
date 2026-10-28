@@ -9,7 +9,7 @@ class WithPath(Envelope):
 
     def __init__(self, origin: Request, path: str) -> None:
         super().__init__(origin)
-        self._path = path if path.startswith("/") else f"/{path}"
+        self._path = path
 
     async def path(self) -> str:
-        return self._path
+        return self._path if self._path.startswith("/") else f"/{self._path}"

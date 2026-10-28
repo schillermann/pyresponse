@@ -45,6 +45,41 @@ if __name__ == "__main__":
     Server(app, port=8000).start()
 ```
 
+### Example: Testing without a Server (In-Memory ASGI)
+
+Test any ASGI application (`AsgiApp`, `CorsEndpoint`, `Trap`, etc.) purely in memory using `pyresponse` domain objects—no `starlette.testclient.TestClient` or external HTTP client required:
+
+```python
+from pyresponse import AsgiApp, Post, request
+from pyresponse.request import FormField, FormFile, WithBearerToken, WithJsonBody, WithMultipartBody
+from pyresponse.response import Asgi as AsgiResponse, BodyJson, ExpectedJson, ExpectedStatus, Json, Ok, Verified
+
+app = AsgiApp(
+    Post("/api/chat", lambda req: Ok(Json({"context_id": "ctx-123"})))
+)
+
+response = AsgiResponse(
+    app,
+    WithBearerToken(
+        WithJsonBody(
+            request.Fake(method="POST", path="/api/chat"),
+            {"prompt": "Hello"},
+        ),
+        "secret-token",
+    ),
+)
+
+# Inspect directly or verify declaratively:
+assert (await response.head()).status() == 200
+assert (await BodyJson(response).value())["context_id"] == "ctx-123"
+
+await Verified(
+    response,
+    ExpectedStatus(200),
+    ExpectedJson(("context_id",), "ctx-123"),
+).verify()
+```
+
 ---
 
 ## 🛠️ CLI Usage
